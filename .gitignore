@@ -32,3 +32,10 @@ gradle-app.setting
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 
+/src/main/java/JavaC0/
+/src/main/java/JavaC0/analyser
+/src/main/java/JavaC0/error
+/src/main/java/JavaC0/instruction
+/src/main/java/JavaC0/tokenizer
+/src/main/java/JavaC0/util
+/src/main/java/JavaC0/vm
