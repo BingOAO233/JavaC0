@@ -1,21 +1,24 @@
 package c0.util;
 
 import c0.util.LineBuffer;
+import c0.util.console.BetterLogger;
 
 import java.util.Optional;
 import java.util.Scanner;
 
 public class StringIter
 {
+    private Scanner scanner;
+
     private LineBuffer lineBuffer;
 
     boolean initialized = false;
 
     private Optional<Character> peeked = Optional.empty();
 
-    public StringIter(LineBuffer buffer)
+    public StringIter(Scanner s)
     {
-        lineBuffer = buffer;
+        scanner = s;
     }
 
     /**
@@ -56,5 +59,40 @@ public class StringIter
             this.peeked = Optional.of(ch);
             return ch;
         }
+    }
+
+    /**
+     * read in function
+     */
+    public void readAll()
+    {
+        if (initialized)
+            return;
+        while (scanner.hasNextLine())
+        {
+            lineBuffer.append(scanner.nextLine() + '\n');
+        }
+        BetterLogger.notify(lineBuffer.toString());
+        initialized = true;
+    }
+
+    public boolean isEOF()
+    {
+        return lineBuffer.isEOF();
+    }
+
+    public Position currentPos()
+    {
+        return lineBuffer.currentPos();
+    }
+
+    public Position previousPos()
+    {
+        return lineBuffer.previousPos();
+    }
+
+    public Position nextPos()
+    {
+        return lineBuffer.nextPos();
     }
 }

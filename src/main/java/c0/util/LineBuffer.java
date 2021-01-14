@@ -1,6 +1,7 @@
 package c0.util;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class LineBuffer
 {
@@ -90,6 +91,17 @@ public class LineBuffer
     public Boolean isEOF()
     {
         return ptr.row >= buffer.size();
+    }
+
+    public void append(String line)
+    {
+        buffer.add(line);
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.valueOf(buffer);
     }
 }
 
