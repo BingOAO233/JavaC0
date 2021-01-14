@@ -2,7 +2,16 @@
 ### Example user template template
 ### Example user template
 
-# IntelliJ project files
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# idea file
 .idea
 *.iml
 out
