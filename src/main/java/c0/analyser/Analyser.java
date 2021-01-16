@@ -8,11 +8,13 @@ import c0.tokenizer.TokenType;
 import c0.tokenizer.Tokenizer;
 import c0.util.Position;
 import c0.util.program.Span;
+import c0.util.program.structure.Ident;
 import c0.util.program.structure.Program;
 import c0.util.program.structure.TypeDefine;
 import c0.util.program.structure.statement.*;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -66,6 +68,17 @@ public class Analyser
     {
         var token = peek();
         return token.getTokenType() == tt;
+    }
+
+    private boolean check(TokenType[] tts) throws TokenizeError
+    {
+        var token = peek();
+        for (var tt : tts)
+        {
+            if (check(tt))
+                return true;
+        }
+        return false;
     }
 
     private Token nextIf(TokenType tt) throws TokenizeError
@@ -147,6 +160,18 @@ public class Analyser
         }
     }
 
+    private TypeDefine analyseType() throws CompileError
+    {
+        Token typeToken = expect(TokenType.IDENT);
+        return new TypeDefine(typeToken.getSpan(), (String) typeToken.getValue(), null);
+    }
+
+    private Ident analyseIdent() throws CompileError
+    {
+        var token = expect(TokenType.IDENT);
+        return new Ident(token.getSpan(), (String) token.getValue());
+    }
+
     private Program analyseProgram() throws CompileError
     {
         ArrayList<FunctionStatement> functions = new ArrayList<>();
@@ -185,36 +210,32 @@ public class Analyser
     {
         // function -> 'fn' IDENT '(' function_param_list? ')' '->' ty block_stmt
         // 'fn'
-        expect(TokenType.FN_KW);
+        var srtSpan = expect(TokenType.FN_KW).getSpan();
         // IDENT
-        Token functionToken = expect(TokenType.IDENT);
-        String functionName = (String) functionToken.getValue();
+        var funcName = analyseIdent();
         // '('
         expect(TokenType.L_PAREN);
         // function_param_list
+        ArrayList<FunctionParam> params = null;
         if (!check(TokenType.R_PAREN))
         {
-            var params = analyseFunctionParamList();
+            params = analyseFunctionParamList();
         }
         // ')'
         expect(TokenType.R_PAREN);
         // '->'
         expect(TokenType.ARROW);
         // ty
-        if (!(check(TokenType.INT64) || check(TokenType.DOUBLE) || check(TokenType.VOID)))
+        var allowType = new TokenType[]{TokenType.INT64, TokenType.DOUBLE, TokenType.VOID};
+        if (!check(allowType))
         {
-            throw new UnexpectedTokenError(new TokenType[]{TokenType.INT64, TokenType.DOUBLE, TokenType.VOID}, peek());
+            throw new UnexpectedTokenError(allowType, peek());
         }
         TypeDefine returnType = analyseType();
         // block_stmt
         BlockStatement body = analyseBlockStatement();
-        // TODO: function table
-    }
 
-    private TypeDefine analyseType() throws CompileError
-    {
-        Token typeToken = expect(TokenType.IDENT);
-        return new TypeDefine(typeToken.getSpan(), (String) typeToken.getValue(), null);
+        return new FunctionStatement(Span.add(srtSpan, body.getSpan()), funcName, params, returnType, body);
     }
 
     private ArrayList<FunctionParam> analyseFunctionParamList() throws CompileError
@@ -244,8 +265,7 @@ public class Analyser
             isConst = true;
         }
         // IDENT
-        Token paramToken = expect(TokenType.IDENT);
-        String paramName = (String) paramToken.getValue();
+        Ident paramName = analyseIdent();
         // :
         expect(TokenType.COMMA);
         // ty
@@ -253,8 +273,9 @@ public class Analyser
         {
             throw new UnexpectedTokenError(new TokenType[]{TokenType.INT64, TokenType.DOUBLE}, peek());
         }
-        Token paramType = next();
+        TypeDefine paramType = analyseType();
         // TODO: function param table
+        return new FunctionParam(isConst, paramName, paramType);
     }
 
     private BlockStatement analyseBlockStatement() throws CompileError
