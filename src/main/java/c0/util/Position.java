@@ -1,5 +1,7 @@
 package c0.util;
 
+import JavaC0.util.Pos;
+
 public class Position
 {
     public int row;
@@ -31,5 +33,47 @@ public class Position
     public Position nextRow()
     {
         return new Position(row + 1, 0);
+    }
+
+    /**
+     * compare a ? b
+     *
+     * @param a position a
+     * @param b position b
+     * @return false if a < b, true if a > b
+     */
+    public static boolean compare(Position a, Position b)
+    {
+        if (a.row != b.row)
+            return a.row > b.row;
+        return a.col > b.col;
+    }
+
+    /**
+     * return max (a, b)
+     *
+     * @param a position a
+     * @param b position b
+     * @return Larger one in a & b
+     */
+    public static Position max(Position a, Position b)
+    {
+        if (compare(a, b))
+            return a;
+        return b;
+    }
+
+    /**
+     * return min (a, b)
+     *
+     * @param a position a
+     * @param b position b
+     * @return Smaller one in a & b
+     */
+    public static Position min(Position a, Position b)
+    {
+        if (compare(a, b))
+            return b;
+        return a;
     }
 }

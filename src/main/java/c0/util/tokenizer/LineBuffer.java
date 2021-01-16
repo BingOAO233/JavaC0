@@ -1,7 +1,8 @@
-package c0.util;
+package c0.util.tokenizer;
+
+import c0.util.Position;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class LineBuffer
 {

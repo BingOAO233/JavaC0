@@ -3,7 +3,7 @@ package c0.tokenizer;
 import c0.error.ErrorCode;
 import c0.error.TokenizeError;
 import c0.util.Position;
-import c0.util.StringIter;
+import c0.util.tokenizer.StringIter;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -31,6 +31,10 @@ public class Tokenizer
         KEYWORDS.put("return", TokenType.RETURN_KW);
         KEYWORDS.put("break", TokenType.BREAK_KW);
         KEYWORDS.put("continue", TokenType.CONTINUE_KW);
+
+        KEYWORDS.put("int", TokenType.INT64);
+        KEYWORDS.put("void", TokenType.VOID);
+        KEYWORDS.put("double", TokenType.DOUBLE);
     }
 
     public Token nextToken() throws TokenizeError
@@ -45,6 +49,12 @@ public class Tokenizer
         }
 
         char peek = iter.peekChar();
+        // comment skip
+        if (peek == '/')
+        {
+            skipComment();
+        }
+
         if (Character.isDigit(peek))
         {
             return lexNumber();
@@ -104,6 +114,21 @@ public class Tokenizer
         if (KEYWORDS.containsKey(keyIdentRaw.toString()))
             return new Token(KEYWORDS.get(keyIdentRaw.toString()), keyIdentRaw.toString(), srtPos, iter.currentPos());
         return new Token(TokenType.IDENT, keyIdentRaw.toString(), srtPos, iter.currentPos());
+    }
+
+    private void skipComment() throws TokenizeError
+    {
+        char peek = iter.peekChar();
+        char peekNext = iter.nextChar();
+        if (peek != peekNext)
+        {
+            throw new TokenizeError(ErrorCode.UnknownToken, iter.previousPos());
+        }
+        while (peek != '\n')
+        {
+            iter.nextChar();
+            peek = iter.peekChar();
+        }
     }
 
     private Token lexOperatorOrUnknown() throws TokenizeError

@@ -10,6 +10,7 @@ public enum ErrorCode
     UnknownToken,
     UnexpectedToken,
     DuplicatedDeclaration,
-    NoDeclaration
+    NoDeclaration,
+    NoSemicolonAfterStatement,
 }
 

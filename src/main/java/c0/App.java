@@ -11,7 +11,9 @@ import c0.instruction.Instruction;
 import c0.tokenizer.Token;
 import c0.tokenizer.TokenType;
 import c0.tokenizer.Tokenizer;
-import c0.util.StringIter;
+import c0.util.program.structure.Program;
+import c0.util.program.structure.statement.Statement;
+import c0.util.tokenizer.StringIter;
 import c0.util.console.BetterLogger;
 import net.sourceforge.argparse4j.*;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -29,9 +31,20 @@ public class App
     public static void main(String[] args) throws CompileError
     {
         // welcome msg
+        System.out.println("?");
         BetterLogger.notify("Starting ...");
 
-        argumentParse(args);
+        // arguments parse
+        var argParser = getArgParser();
+        try
+        {
+            result = argParser.parseArgs(args);
+        } catch (ArgumentParserException e)
+        {
+            argParser.handleError(e);
+            System.exit(2);
+            return;
+        }
 
         streamSetup();
 
@@ -56,20 +69,20 @@ public class App
 
     private static void analyse(Analyser analyser)
     {
-        List<Instruction> instructions;
+        Program program;
         try
         {
-            instructions = analyser.analyse();
+            program = analyser.analyse();
         } catch (CompileError compileError)
         {
             BetterLogger.error(compileError.toString());
             System.exit(1);
             return;
         }
-        for (Instruction instruction : instructions)
-        {
-            output.println(instruction.toString());
-        }
+//        for (Instruction instruction : instructions)
+//        {
+//            output.println(instruction.toString());
+//        }
     }
 
     private static void tokenize(Tokenizer tokenizer) throws CompileError
@@ -140,24 +153,11 @@ public class App
         }
     }
 
-    private static void argumentParse(String[] args)
-    {
-        var argParser = getArgParser();
-        try
-        {
-            result = argParser.parseArgs(args);
-        } catch (ArgumentParserException e)
-        {
-            argParser.handleError(e);
-            System.exit(2);
-        }
-    }
-
     private static ArgumentParser getArgParser()
     {
         var builder = ArgumentParsers.newFor("java-c0");
         var parser = builder.build();
-        parser.addArgument("-t", "--tokenizer")
+        parser.addArgument("-t", "--tokenize")
                 .help("Tokenize the input")
                 .action(Arguments.storeTrue());
         parser.addArgument("-l", "--analyse")

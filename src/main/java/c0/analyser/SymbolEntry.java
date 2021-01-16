@@ -1,13 +1,17 @@
 package c0.analyser;
 
+import c0.tokenizer.TokenType;
+
 public class SymbolEntry
 {
+    TokenType type;
     boolean isConstant;
     boolean isInitialized;
     int stackOffset;
 
-    public SymbolEntry(boolean isConstant, boolean isInitialized, int stackOffset)
+    public SymbolEntry(TokenType tt, boolean isConstant, boolean isInitialized, int stackOffset)
     {
+        type = tt;
         this.isConstant = isConstant;
         this.isInitialized = isInitialized;
         this.stackOffset = stackOffset;

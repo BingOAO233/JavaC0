@@ -1,6 +1,7 @@
 package c0.tokenizer;
 
 import c0.util.Position;
+import c0.util.program.Span;
 
 import java.util.Objects;
 
@@ -65,19 +66,9 @@ public class Token
         return tokenType;
     }
 
-    public void setTokenType(TokenType type)
-    {
-        tokenType = type;
-    }
-
     public Object getValue()
     {
         return value;
-    }
-
-    public void setValue(Object val)
-    {
-        value = val;
     }
 
     public Position getStartPos()
@@ -85,14 +76,29 @@ public class Token
         return startPos;
     }
 
-    public void setStartPos(Position srt)
-    {
-        startPos = srt;
-    }
-
     public Position getEndPos()
     {
         return endPos;
+    }
+
+    public Span getSpan()
+    {
+        return new Span(getStartPos(), getEndPos());
+    }
+
+    public void setTokenType(TokenType type)
+    {
+        tokenType = type;
+    }
+
+    public void setValue(Object val)
+    {
+        value = val;
+    }
+
+    public void setStartPos(Position srt)
+    {
+        startPos = srt;
     }
 
     public void setEndPos(Position end)

@@ -1,6 +1,6 @@
-package c0.util;
+package c0.util.tokenizer;
 
-import c0.util.LineBuffer;
+import c0.util.Position;
 import c0.util.console.BetterLogger;
 
 import java.util.Optional;
@@ -19,6 +19,7 @@ public class StringIter
     public StringIter(Scanner s)
     {
         scanner = s;
+        lineBuffer = new LineBuffer();
     }
 
     /**
