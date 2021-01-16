@@ -1,7 +1,6 @@
 package c0.util.program.structure.expression;
 
 import c0.util.program.Span;
-import c0.util.program.structure.Expression;
 import c0.util.program.structure.TypeDefine;
 
 public class AsExpression

@@ -14,6 +14,11 @@ public class Span
         endPos = new Position();
     }
 
+    public Span(Position pos)
+    {
+        startPos = endPos = pos;
+    }
+
     public Span(Position startPos, Position endPos)
     {
         this.startPos = startPos;

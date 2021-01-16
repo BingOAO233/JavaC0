@@ -5,7 +5,7 @@ import c0.util.program.Span;
 
 public class Statement
 {
-    public Span span;
+    protected Span span;
 
     public Statement(Span span)
     {

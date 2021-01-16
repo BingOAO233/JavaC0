@@ -2,7 +2,7 @@ package c0.util.program.structure.expression;
 
 import c0.util.program.Span;
 
-class AssignExpression
+public class AssignExpression extends Expression
 {
     public Span span;
     public boolean allowAssignConst;

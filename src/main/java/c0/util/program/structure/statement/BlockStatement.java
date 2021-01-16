@@ -4,7 +4,7 @@ import c0.util.program.Span;
 
 import java.util.ArrayList;
 
-public class BlockStatement extends Statement
+public class BlockStatement extends Statement implements IElseIfBlock
 {
     //    public Span span;
     public ArrayList<Statement> statements;
