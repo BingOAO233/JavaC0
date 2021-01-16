@@ -16,7 +16,7 @@ public class FunctionStatement extends Statement
 
     public FunctionStatement(Span span, Ident name, ArrayList<FunctionParam> params, TypeDefine returnType, BlockStatement body)
     {
-        this.span = span;
+        super(span);
         this.name = name;
         this.params = params;
         this.returnType = returnType;

@@ -17,15 +17,11 @@ public class DeclareStatement extends Statement
 
     public DeclareStatement(Span span, boolean isConst, Ident name, TypeDefine type, Optional<Expression> value)
     {
-        this.span = span;
+        super(span);
         this.isConst = isConst;
         this.name = name;
         this.type = type;
         this.value = value;
     }
 
-    DeclareStatement()
-    {
-
-    }
 }

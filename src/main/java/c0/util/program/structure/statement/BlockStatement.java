@@ -9,14 +9,9 @@ public class BlockStatement extends Statement
     //    public Span span;
     public ArrayList<Statement> statements;
 
-    BlockStatement()
-    {
-
-    }
-
     public BlockStatement(Span span, ArrayList<Statement> statements)
     {
-        this.span = span;
+        super(span);
         this.statements = statements;
     }
 
