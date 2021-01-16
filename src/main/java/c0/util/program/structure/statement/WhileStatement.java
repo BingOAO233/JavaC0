@@ -3,7 +3,7 @@ package c0.util.program.structure.statement;
 import c0.util.program.Span;
 import c0.util.program.structure.expression.Expression;
 
-class WhileStatement extends Statement
+public class WhileStatement extends Statement
 {
     //    public Span span;
     public Expression condition;
