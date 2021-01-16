@@ -3,9 +3,23 @@ package c0.util.program.structure.expression;
 import c0.util.program.Span;
 import c0.util.program.structure.operator.UnaryOperator;
 
-class UnaryExpression
+public class UnaryExpression extends Expression
 {
-    public Span span;
     public UnaryOperator op;
     public Expression expression;
+
+    public UnaryExpression(Span span, UnaryOperator op, Expression expression)
+    {
+        super(span);
+        this.op = op;
+        this.expression = expression;
+    }
+
+    @Override
+    public UnaryExpression clone() throws CloneNotSupportedException
+    {
+        UnaryExpression ue = (UnaryExpression) super.clone();
+        ue.expression = this.expression.clone();
+        return ue;
+    }
 }

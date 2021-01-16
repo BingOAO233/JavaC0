@@ -3,9 +3,8 @@ package c0.util.program.structure.expression;
 import c0.util.program.Span;
 import c0.util.program.structure.operator.BinaryOperator;
 
-class BinaryExpression
+public class BinaryExpression extends Expression
 {
-    public Span span;
     public BinaryOperator op;
     public Expression left;
     public Expression right;

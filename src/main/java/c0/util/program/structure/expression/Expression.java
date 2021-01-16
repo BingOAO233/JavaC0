@@ -5,7 +5,25 @@ import c0.util.program.structure.Ident;
 
 public class Expression
 {
+    protected Span span;
 
+    public Expression(Span s)
+    {
+        span = s;
+    }
+
+    @Override
+    public Expression clone() throws CloneNotSupportedException
+    {
+        Expression e = (Expression) super.clone();
+        e.span = this.span.clone();
+        return e;
+    }
+
+    public Span getSpan()
+    {
+        return span;
+    }
 }
 
 //public enum Expression

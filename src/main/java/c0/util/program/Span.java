@@ -1,6 +1,5 @@
 package c0.util.program;
 
-import JavaC0.util.Pos;
 import c0.util.Position;
 
 public class Span
@@ -51,5 +50,14 @@ public class Span
     {
         startPos = Position.min(startPos, s.startPos);
         endPos = Position.max(endPos, s.endPos);
+    }
+
+    @Override
+    public Span clone() throws CloneNotSupportedException
+    {
+        Span s = (Span) super.clone();
+        s.startPos = this.startPos.clone();
+        s.endPos = this.endPos.clone();
+        return s;
     }
 }

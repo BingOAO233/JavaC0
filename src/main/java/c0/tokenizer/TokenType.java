@@ -23,10 +23,10 @@ public enum TokenType
 //    /**
 //     * literal type
 //     */
-//    INT64_L,        // int64 literal
-//    STR_L,          // String literal
-//    CHAR_L,         // Char literal
-//    DOUBLE_L,       // float64 literal
+    INT64_L,        // int64 literal
+    STR_L,          // String literal
+    CHAR_L,         // Char literal
+    DOUBLE_L,       // float64 literal
 
     /**
      * keywords

@@ -5,21 +5,17 @@ import c0.util.program.structure.Ident;
 
 import java.util.ArrayList;
 
-class CallExpression
+public class CallExpression extends Expression
 {
-    public Span span;
     public Ident function;
     public ArrayList<Expression> params;
 
     public CallExpression(Span span, Ident function, ArrayList<Expression> params)
     {
-        this.span = span;
+        super(span);
         this.function = function;
         this.params = params;
     }
 
-    public CallExpression()
-    {
 
-    }
 }

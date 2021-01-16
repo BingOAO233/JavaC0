@@ -12,5 +12,9 @@ public enum ErrorCode
     DuplicatedDeclaration,
     NoDeclaration,
     NoSemicolonAfterStatement,
+    UnexpectedPattern,
+    UnexpectedOperator,
+    NotABinaryOperator,
+
 }
 

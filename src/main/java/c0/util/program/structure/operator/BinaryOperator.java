@@ -11,5 +11,5 @@ public enum BinaryOperator
     Ge,
     Le,
     Eq,
-    Neq,
+    Neq;
 }

@@ -3,9 +3,8 @@ package c0.util.program.structure.expression;
 import c0.util.program.Span;
 import c0.util.program.structure.TypeDefine;
 
-public class AsExpression
+public class AsExpression extends Expression
 {
-    public Span span;
     public Expression value;
     public TypeDefine type;
 

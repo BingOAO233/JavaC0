@@ -1,6 +1,5 @@
 package c0.util;
 
-import JavaC0.util.Pos;
 
 public class Position
 {
@@ -75,5 +74,11 @@ public class Position
         if (compare(a, b))
             return b;
         return a;
+    }
+
+    @Override
+    public Position clone() throws CloneNotSupportedException
+    {
+        return (Position) super.clone();
     }
 }
