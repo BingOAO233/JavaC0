@@ -1,6 +1,6 @@
 package c0.analyser;
 
-import c0.tokenizer.TokenType;
+import c0.tokenizer.token.TokenType;
 
 public class SymbolEntry
 {

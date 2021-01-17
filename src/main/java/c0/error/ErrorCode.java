@@ -14,6 +14,7 @@ public enum ErrorCode
     NoSemicolonAfterStatement,
     UnexpectedPattern,
     UnexpectedOperator,
+    UnexpectedType,
     NotABinaryOperator,
 
 }

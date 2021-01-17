@@ -1,4 +1,4 @@
-package c0.tokenizer;
+package c0.tokenizer.token;
 
 import c0.error.AnalyseError;
 import c0.error.ErrorCode;

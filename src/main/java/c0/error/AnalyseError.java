@@ -2,29 +2,20 @@ package c0.error;
 
 import c0.util.Position;
 
-public class AnalyseError extends CompileError
+public class AnalyseError extends C0Error
 {
     private static final long serialVersionUID = 1L;
+    protected Position position;
 
-    ErrorCode errorCode;
-    Position position;
-
-    @Override
-    public ErrorCode getErr()
+    public AnalyseError(ErrorCode errorCode, Position position)
     {
-        return errorCode;
+        super(errorCode);
+        this.position = position;
     }
 
-    @Override
     public Position getPos()
     {
         return position;
-    }
-
-    public AnalyseError(ErrorCode code, Position pos)
-    {
-        errorCode = code;
-        position = pos;
     }
 
     @Override

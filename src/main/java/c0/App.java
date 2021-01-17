@@ -2,19 +2,18 @@ package c0;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import c0.analyser.Analyser;
-import c0.error.CompileError;
-import c0.instruction.Instruction;
-import c0.tokenizer.Token;
-import c0.tokenizer.TokenType;
+import c0.compiler.Compiler;
+import c0.error.C0Error;
+import c0.tokenizer.token.Token;
+import c0.tokenizer.token.TokenType;
 import c0.tokenizer.Tokenizer;
 import c0.util.program.structure.Program;
-import c0.util.program.structure.statement.Statement;
 import c0.util.tokenizer.StringIter;
 import c0.util.console.BetterLogger;
+import c0.vm.S0;
 import net.sourceforge.argparse4j.*;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -28,7 +27,7 @@ public class App
     private static PrintStream output;
     private static Namespace result;
 
-    public static void main(String[] args) throws CompileError
+    public static void main(String[] args) throws C0Error
     {
         // welcome msg
         System.out.println("?");
@@ -63,29 +62,42 @@ public class App
             analyse(analyser);
         }
 
+        var compiler = new Compiler(analyse(analyser));
+        var s0 = compile(compiler);
+        if (result.getBoolean("assembly"))
+        {
+
+        }
         // end msg
         BetterLogger.success("Complete!");
     }
 
-    private static void analyse(Analyser analyser)
+    private static S0 compile(Compiler compiler)
+    {
+
+
+    }
+
+    private static Program analyse(Analyser analyser)
     {
         Program program;
         try
         {
             program = analyser.analyse();
-        } catch (CompileError compileError)
+        } catch (C0Error | CloneNotSupportedException c0Error)
         {
-            BetterLogger.error(compileError.toString());
+            BetterLogger.error(c0Error.toString());
             System.exit(1);
-            return;
+            return null;
         }
 //        for (Instruction instruction : instructions)
 //        {
 //            output.println(instruction.toString());
 //        }
+        return program;
     }
 
-    private static void tokenize(Tokenizer tokenizer) throws CompileError
+    private static void tokenize(Tokenizer tokenizer) throws C0Error
     {
         BetterLogger.notify("Tokenizing...");
         var tokens = new ArrayList<Token>();
@@ -162,6 +174,12 @@ public class App
                 .action(Arguments.storeTrue());
         parser.addArgument("-l", "--analyse")
                 .help("Analyse the input")
+                .action(Arguments.storeTrue());
+        parser.addArgument("-s", "--assembly")
+                .help("To middle code")
+                .action(Arguments.storeTrue());
+        parser.addArgument("-c", "--compile")
+                .help("Compile the input")
                 .action(Arguments.storeTrue());
         parser.addArgument("-o", "--output")
                 .help("Set the output file")

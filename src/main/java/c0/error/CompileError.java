@@ -1,12 +1,17 @@
 package c0.error;
 
 import c0.util.Position;
+import c0.util.program.Span;
 
-public abstract class CompileError extends Exception
+public class CompileError extends C0Error
 {
     private static final long serialVersionUID = 1L;
 
-    public abstract ErrorCode getErr();
+    private Span span;
 
-    public abstract Position getPos();
+    public CompileError(ErrorCode errorCode, Span span)
+    {
+        super(errorCode);
+        this.span = span;
+    }
 }

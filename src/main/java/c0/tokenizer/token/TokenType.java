@@ -1,4 +1,4 @@
-package c0.tokenizer;
+package c0.tokenizer.token;
 
 public enum TokenType
 {

@@ -2,6 +2,8 @@ package c0.tokenizer;
 
 import c0.error.ErrorCode;
 import c0.error.TokenizeError;
+import c0.tokenizer.token.Token;
+import c0.tokenizer.token.TokenType;
 import c0.util.Position;
 import c0.util.tokenizer.StringIter;
 

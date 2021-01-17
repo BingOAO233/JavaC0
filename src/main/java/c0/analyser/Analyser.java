@@ -1,11 +1,10 @@
 package c0.analyser;
 
+import c0.tokenizer.Tokenizer;
 import c0.error.AnalyseError;
 import c0.error.*;
-import c0.instruction.Instruction;
-import c0.tokenizer.Token;
-import c0.tokenizer.TokenType;
-import c0.tokenizer.Tokenizer;
+import c0.tokenizer.token.Token;
+import c0.tokenizer.token.TokenType;
 import c0.util.Position;
 import c0.util.program.Span;
 import c0.util.program.structure.Ident;
@@ -13,7 +12,6 @@ import c0.util.program.structure.LiteralType;
 import c0.util.program.structure.Program;
 import c0.util.program.structure.TypeDefine;
 import c0.util.program.structure.expression.*;
-import c0.util.program.structure.operator.BinaryOperator;
 import c0.util.program.structure.operator.UnaryOperator;
 import c0.util.program.structure.statement.*;
 
@@ -25,7 +23,6 @@ import java.util.Optional;
 public class Analyser
 {
     Tokenizer tokenizer;
-    ArrayList<Instruction> instructions;
 
     Token peekedToken = null;
 
@@ -36,10 +33,9 @@ public class Analyser
     public Analyser(Tokenizer tokenizer)
     {
         this.tokenizer = tokenizer;
-        this.instructions = new ArrayList<>();
     }
 
-    public Program analyse() throws CompileError, CloneNotSupportedException
+    public Program analyse() throws C0Error, CloneNotSupportedException
     {
         return analyseProgram();
     }
@@ -100,7 +96,7 @@ public class Analyser
 
     }
 
-    private Token expect(TokenType tt) throws CompileError
+    private Token expect(TokenType tt) throws C0Error
     {
         var token = peek();
         if (token.getTokenType() == tt)
@@ -173,9 +169,9 @@ public class Analyser
      * token(IDENT) -> TypeDefine
      *
      * @return TypeDefine structure
-     * @throws CompileError
+     * @throws C0Error
      */
-    private TypeDefine analyseType() throws CompileError
+    private TypeDefine analyseType() throws C0Error
     {
         Token typeToken = expect(TokenType.IDENT);
         return new TypeDefine(typeToken.getSpan(), (String) typeToken.getValue(), null);
@@ -185,9 +181,9 @@ public class Analyser
      * token(IDENT) -> Ident
      *
      * @return Ident structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private Ident analyseIdent() throws CompileError
+    private Ident analyseIdent() throws C0Error
     {
         // IDENT
         var token = expect(TokenType.IDENT);
@@ -200,9 +196,9 @@ public class Analyser
      * decl_stmt -> let_decl_stmt | const_decl_stmt
      *
      * @return Program structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private Program analyseProgram() throws CompileError, CloneNotSupportedException
+    private Program analyseProgram() throws C0Error, CloneNotSupportedException
     {
         ArrayList<FunctionStatement> functions = new ArrayList<>();
         ArrayList<DeclareStatement> declares = new ArrayList<>();
@@ -237,9 +233,9 @@ public class Analyser
      * function -> 'fn' IDENT '(' function_param_list? ')' '->' ty block_stmt
      *
      * @return FunctionStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private FunctionStatement analyseFunction() throws CompileError, CloneNotSupportedException
+    private FunctionStatement analyseFunction() throws C0Error, CloneNotSupportedException
     {
         // 'fn'
         var srtSpan = expect(TokenType.FN_KW).getSpan();
@@ -274,9 +270,9 @@ public class Analyser
      * function_param_list -> function_param (',' function_param)*
      *
      * @return List of FunctionParam
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private ArrayList<FunctionParam> analyseFunctionParamList() throws CompileError
+    private ArrayList<FunctionParam> analyseFunctionParamList() throws C0Error
     {
         ArrayList<FunctionParam> params = new ArrayList<>();
         while (true)
@@ -297,9 +293,9 @@ public class Analyser
      * function_param -> 'const'? IDENT ':' ty
      *
      * @return FunctionParam structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private FunctionParam analyseFunctionParam() throws CompileError
+    private FunctionParam analyseFunctionParam() throws C0Error
     {
         boolean isConst = false;
         // 'const'?
@@ -326,9 +322,9 @@ public class Analyser
      * block_stmt -> '{' stmt* '}'
      *
      * @return BlockStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private BlockStatement analyseBlockStatement() throws CompileError, CloneNotSupportedException
+    private BlockStatement analyseBlockStatement() throws C0Error, CloneNotSupportedException
     {
         // '{'
         var srtSpan = expect(TokenType.L_BRACE).getSpan();
@@ -353,9 +349,9 @@ public class Analyser
      * | return_stmt | block_stmt | empty_stmt
      *
      * @return Statement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private Statement analyseStatement() throws CompileError, CloneNotSupportedException
+    private Statement analyseStatement() throws C0Error, CloneNotSupportedException
     {
 
         if (check(TokenType.CONST_KW))
@@ -414,9 +410,9 @@ public class Analyser
      * empty_stmt -> ';'
      *
      * @return EmptyStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private EmptyStatement analyseEmptyStatement() throws CompileError
+    private EmptyStatement analyseEmptyStatement() throws C0Error
     {
         // ';'
         var span = expect(TokenType.SEMICOLON).getSpan();
@@ -428,9 +424,9 @@ public class Analyser
      * if_stmt -> 'if' expr block_stmt ('else' 'if' expr block_stmt)* ('else' block_stmt)?
      *
      * @return IfStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private IfStatement analyseIfStatement() throws CompileError, CloneNotSupportedException
+    private IfStatement analyseIfStatement() throws C0Error, CloneNotSupportedException
     {
         // 'if'
         var span = expect(TokenType.IF_KW).getSpan();
@@ -472,9 +468,9 @@ public class Analyser
      * while_stmt -> 'while' expr block_stmt
      *
      * @return WhileStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private WhileStatement analyseWhileStatement() throws CompileError, CloneNotSupportedException
+    private WhileStatement analyseWhileStatement() throws C0Error, CloneNotSupportedException
     {
         // 'while'
         expect(TokenType.WHILE_KW);
@@ -490,9 +486,9 @@ public class Analyser
      * break_stmt -> 'break' ';'
      *
      * @return BreakStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private BreakStatement analyseBreakStatement() throws CompileError
+    private BreakStatement analyseBreakStatement() throws C0Error
     {
         // 'break'
         var span = expect(TokenType.BREAK_KW).getSpan();
@@ -505,9 +501,9 @@ public class Analyser
      * return_stmt -> 'return' expr? ';'
      *
      * @return ReturnStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private ReturnStatement analyseReturnStatement() throws CompileError, CloneNotSupportedException
+    private ReturnStatement analyseReturnStatement() throws C0Error, CloneNotSupportedException
     {
         // 'return'
         var srtSpan = expect(TokenType.RETURN_KW).getSpan();
@@ -527,9 +523,9 @@ public class Analyser
      * continue_stmt -> 'continue' ';'
      *
      * @return ContinueStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private ContinueStatement analyseContinueStatement() throws CompileError
+    private ContinueStatement analyseContinueStatement() throws C0Error
     {
         // 'continue'
         var span = expect(TokenType.CONTINUE_KW).getSpan();
@@ -542,9 +538,9 @@ public class Analyser
      * const_decl_stmt -> 'const' IDENT ':' ty '=' expr ';'
      *
      * @return DeclareStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private DeclareStatement analyseConstDeclaration() throws CompileError, CloneNotSupportedException
+    private DeclareStatement analyseConstDeclaration() throws C0Error, CloneNotSupportedException
     {
         // 'let'
         var srtSpan = expect(TokenType.LET_KW).getSpan();
@@ -568,9 +564,9 @@ public class Analyser
      * let_decl_stmt -> 'let' IDENT ':' ty ('=' expr)? ';'
      *
      * @return DeclareStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private DeclareStatement analyseLetDeclaration() throws CompileError, CloneNotSupportedException
+    private DeclareStatement analyseLetDeclaration() throws C0Error, CloneNotSupportedException
     {
         // 'let'
         var srtSpan = expect(TokenType.LET_KW).getSpan();
@@ -599,9 +595,9 @@ public class Analyser
      * expr_stmt -> expr ';'
      *
      * @return ExpressionStatement structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private ExpressionStatement analyseExpressionStatement() throws CompileError, CloneNotSupportedException
+    private ExpressionStatement analyseExpressionStatement() throws C0Error, CloneNotSupportedException
     {
         // expr
         var expr = analyseExpression();
@@ -617,7 +613,7 @@ public class Analyser
      * @return Expression structure
      * @throws TokenizeError error
      */
-    private Expression analyseExpression() throws CompileError, CloneNotSupportedException
+    private Expression analyseExpression() throws C0Error, CloneNotSupportedException
     {
         // unary_expr
         var lhs = analyseUnaryExpression();
@@ -629,9 +625,9 @@ public class Analyser
      * Item -> Ident | FunctionCall | Literal | '(' Expr ')'
      *
      * @return Expression structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private Expression analyseItem() throws CompileError, CloneNotSupportedException
+    private Expression analyseItem() throws C0Error, CloneNotSupportedException
     {
         if (check(TokenType.IDENT))
         {
@@ -678,9 +674,9 @@ public class Analyser
      * ProUOp -> 'as' TypeDef
      *
      * @return Expression structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private Expression analyseUnaryExpression() throws CompileError, CloneNotSupportedException
+    private Expression analyseUnaryExpression() throws C0Error, CloneNotSupportedException
     {
         ArrayList<Token> precOps = new ArrayList<>();
         while (check(TokenType.MINUS))
@@ -724,9 +720,9 @@ public class Analyser
      *
      * @param func Ident func
      * @return CallExpression structure
-     * @throws CompileError error
+     * @throws C0Error error
      */
-    private CallExpression analyseFunctionCall(Ident func) throws CompileError, CloneNotSupportedException
+    private CallExpression analyseFunctionCall(Ident func) throws C0Error, CloneNotSupportedException
     {
         expect(TokenType.L_PAREN);
         ArrayList<Expression> params = new ArrayList<>();
@@ -745,7 +741,7 @@ public class Analyser
         return new CallExpression(Span.add(func.span, rSpan), func, params);
     }
 
-    private Expression analyseOPG(Expression lhs, int precedence) throws CompileError, CloneNotSupportedException
+    private Expression analyseOPG(Expression lhs, int precedence) throws C0Error, CloneNotSupportedException
     {
         while (peek().isBinaryOp() && peek().precedence() > precedence)
         {
