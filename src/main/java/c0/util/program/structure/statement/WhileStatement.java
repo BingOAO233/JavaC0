@@ -7,13 +7,13 @@ public class WhileStatement extends Statement
 {
     //    public Span span;
     public Expression condition;
-    public BlockStatement blockStatement;
+    public BlockStatement body;
 
     public WhileStatement(Span span, Expression condition, BlockStatement blockStatement)
     {
         super(span);
         this.condition = condition;
-        this.blockStatement = blockStatement;
+        this.body = blockStatement;
     }
 
 

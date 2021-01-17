@@ -8,8 +8,8 @@ import java.util.*;
 
 public class GlobalEntries
 {
-    IndexSet<String> functions;
-    HashMap<BigInteger, ArrayList<Uint8>> values;
+    public IndexSet<String> functions;
+    public HashMap<BigInteger, ArrayList<Uint8>> values;
 
     public GlobalEntries(IndexSet<String> functions,
                          HashMap<BigInteger, ArrayList<Uint8>> values)

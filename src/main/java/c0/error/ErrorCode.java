@@ -10,12 +10,13 @@ public enum ErrorCode
     UnknownToken,
     UnexpectedToken,
     DuplicatedDeclaration,
+    DuplicatedJump,
     NoDeclaration,
     NoSemicolonAfterStatement,
     UnexpectedPattern,
     UnexpectedOperator,
     UnexpectedType,
     NotABinaryOperator,
-
+    TypeMismatch,
 }
 

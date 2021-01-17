@@ -1,5 +1,9 @@
 package c0.compiler;
 
+import c0.error.CompileError;
+import c0.error.ErrorCode;
+import c0.util.program.Span;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -21,21 +25,21 @@ public class Type
         this.func = Optional.empty();
     }
 
-    public BigInteger size()
+    public int size() throws CompileError
     {
         switch (type)
         {
             case INT:
             case DOUBLE:
             case ADDR:
-                return BigInteger.valueOf(8);
+                return 8;
             case BOOL:
-                return BigInteger.valueOf(1);
+                return 1;
             case FUNC:
             case VOID:
-                return BigInteger.valueOf(0);
+                return 0;
         }
-        return null;
+        throw new CompileError(ErrorCode.UnexpectedType, new Span());
     }
 
     public BigInteger sizeSlot()
@@ -95,24 +99,3 @@ public class Type
     }
 }
 
-enum Ty
-{
-    INT,
-    DOUBLE,
-    BOOL,
-    ADDR,
-    FUNC,
-    VOID,
-}
-
-class FunctionTy
-{
-    public ArrayList<Type> params;
-    public Type ret;
-
-    public FunctionTy(ArrayList<Type> params, Type ret)
-    {
-        this.params = params;
-        this.ret = ret;
-    }
-}
