@@ -42,7 +42,7 @@ public class Analyser
 
     private Token peek() throws TokenizeError
     {
-        if (peekedToken == null)
+        while (peekedToken == null || peekedToken.getTokenType() == TokenType.COMMENT)
         {
             peekedToken = tokenizer.nextToken();
         }

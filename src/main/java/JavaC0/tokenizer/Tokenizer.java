@@ -46,12 +46,7 @@ public class Tokenizer
             return new Token(TokenType.EOF, "", iter.currentPos(), iter.currentPos());
         }
 
-        char peek = iter.nextChar();
-        char peekNext = iter.peekChar();
-        if (peek == '/' && peekNext == '/')
-        {
-            skipComment();
-        }
+        char peek = iter.peekChar();
 
         if (Character.isDigit(peek))
         {
@@ -114,15 +109,6 @@ public class Tokenizer
         return new Token(TokenType.IDENT, keyIdentRaw.toString(), srtPos, iter.currentPos());
     }
 
-    private void skipComment() throws TokenizeError
-    {
-        char peek = iter.peekChar();
-        while (peek != '\n')
-        {
-            iter.nextChar();
-            peek = iter.peekChar();
-        }
-    }
 
     private Token lexOperatorOrUnknown() throws TokenizeError
     {
@@ -149,6 +135,18 @@ public class Tokenizer
 
             case '/':
                 // /
+                if (iter.peekChar() == '/')
+                {
+                    // //
+                    iter.nextChar();
+                    Position srt = iter.previousPos();
+                    StringBuilder value = new StringBuilder("//");
+                    for (char c = iter.nextChar(); c != '\n'; c = iter.nextChar())
+                    {
+                        value.append(c);
+                    }
+                    return new Token(TokenType.COMMENT, value.toString(), srt, iter.currentPos());
+                }
                 return new Token(TokenType.DIV, "/", iter.previousPos(), iter.currentPos());
 
             case '=':
