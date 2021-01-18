@@ -1,10 +1,14 @@
 package JavaC0.vm;
 
 import JavaC0.error.CompileError;
+import JavaC0.util.Tools;
+import JavaC0.vm.dataType.Uint32;
 import com.google.common.primitives.Longs;
 
+import javax.tools.Tool;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 
@@ -41,16 +45,16 @@ public class S0
 
     public void writeBinary(PrintStream output) throws IOException, CompileError
     {
-        output.write(Longs.toByteArray(MAGIC_NUMBER));
-        output.write(Longs.toByteArray(VERSION));
+        output.write(Tools.toU32(Longs.toByteArray(MAGIC_NUMBER)));
+        output.write(Tools.toU32(Longs.toByteArray(VERSION)));
 
-        output.write(Longs.toByteArray(globals.size()));
+        output.write(Tools.toU32(Longs.toByteArray(globals.size())));
         for (var item : globals)
         {
             item.writeBinary(output);
         }
 
-        output.write(Longs.toByteArray(functions.size()));
+        output.write(Tools.toU32(Longs.toByteArray(functions.size())));
         for (var item : functions)
         {
             item.writeBinary(output);

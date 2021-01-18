@@ -1,6 +1,7 @@
 package JavaC0.vm;
 
 import JavaC0.error.CompileError;
+import JavaC0.util.Tools;
 import JavaC0.vm.dataType.Uint32;
 import com.google.common.primitives.Longs;
 
@@ -42,11 +43,11 @@ public class FunctionDefine
 
     public void writeBinary(PrintStream output) throws IOException, CompileError
     {
-        output.write(Longs.toByteArray(name.getValue()));
-        output.write(Longs.toByteArray(retSlots.getValue()));
-        output.write(Longs.toByteArray(paramSlots.getValue()));
-        output.write(Longs.toByteArray(locSlots.getValue()));
-        output.write(Longs.toByteArray(ins.size()));
+        output.write(Tools.toU32(Longs.toByteArray(name.getValue())));
+        output.write(Tools.toU32(Longs.toByteArray(retSlots.getValue())));
+        output.write(Tools.toU32(Longs.toByteArray(paramSlots.getValue())));
+        output.write(Tools.toU32(Longs.toByteArray(locSlots.getValue())));
+        output.write(Tools.toU32(Longs.toByteArray(ins.size())));
         for (var item : ins)
         {
             item.writeBinary(output);

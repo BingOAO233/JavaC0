@@ -1,6 +1,7 @@
 package JavaC0.vm;
 
 import JavaC0.error.CompileError;
+import JavaC0.util.Tools;
 import JavaC0.vm.dataType.Uint8;
 import com.google.common.primitives.Longs;
 
@@ -45,7 +46,7 @@ public class Op
             case 0x4a:
                 return BigInteger.valueOf(4);
             default:
-                return null;
+                return BigInteger.ZERO;
         }
     }
 
@@ -191,7 +192,7 @@ public class Op
             case StackAlloc:
             case Call:
             case CallName:
-                return value.and(new BigInteger("0xffffffff_ffffffff", 16));
+                return value.and(new BigInteger("ffffffffffffffff", 16));
             case Br:
             case BrFalse:
             case BrTrue:
@@ -219,15 +220,17 @@ public class Op
         var param = codeParam();
         var len = param_size(code);
 
-        output.write(Longs.toByteArray(code.getValue()));
-        switch (len.intValue())
+        output.write(Tools.toU8(Longs.toByteArray(code.getValue())));
+        switch (
+                len.intValue())
         {
             case 0:
                 break;
             case 4:
+                output.write(Tools.toU32(Longs.toByteArray(param.longValue())));
+                break;
             case 8:
-                var x = param.longValue();
-                output.write(Longs.toByteArray(x));
+                output.write(Longs.toByteArray(param.longValue()));
                 break;
         }
     }
