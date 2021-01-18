@@ -46,9 +46,9 @@ public class Tokenizer
             return new Token(TokenType.EOF, "", iter.currentPos(), iter.currentPos());
         }
 
-        char peek = iter.peekChar();
-        // comment skip
-        if (peek == '/')
+        char peek = iter.nextChar();
+        char peekNext = iter.peekChar();
+        if (peek == '/' && peekNext == '/')
         {
             skipComment();
         }
@@ -117,11 +117,6 @@ public class Tokenizer
     private void skipComment() throws TokenizeError
     {
         char peek = iter.peekChar();
-        char peekNext = iter.nextChar();
-        if (peek != peekNext)
-        {
-            throw new TokenizeError(ErrorCode.UnknownToken, iter.previousPos());
-        }
         while (peek != '\n')
         {
             iter.nextChar();

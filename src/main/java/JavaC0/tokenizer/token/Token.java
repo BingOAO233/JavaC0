@@ -70,11 +70,6 @@ public class Token
         return tokenType;
     }
 
-    public Object getValue()
-    {
-        return value;
-    }
-
     public Position getStartPos()
     {
         return startPos;
@@ -88,6 +83,11 @@ public class Token
     public Span getSpan()
     {
         return new Span(getStartPos(), getEndPos());
+    }
+
+    public Object getValue()
+    {
+        return value;
     }
 
     public void setTokenType(TokenType type)

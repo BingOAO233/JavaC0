@@ -8,6 +8,7 @@ fn fib(x: int) -> int {
 }
 
 fn main() -> int {
+    // test comment
     let i: int = 0;
     let j: int;
     j = getint();
