@@ -4,21 +4,22 @@ import c0.compiler.*;
 import c0.compiler.Compiler;
 import c0.error.CompileError;
 import c0.error.ErrorCode;
+import c0.util.program.BBArranger;
 import c0.util.program.Span;
-import c0.util.program.structure.BasicBlock;
-import c0.util.program.structure.JumpInstruction;
-import c0.util.program.structure.Place;
-import c0.util.program.structure.expression.AssignExpression;
-import c0.util.program.structure.expression.Expression;
-import c0.util.program.structure.expression.IdentExpression;
-import c0.util.program.structure.p;
+import c0.util.program.structure.*;
+import c0.util.program.structure.expression.*;
+import c0.util.program.structure.operator.BinaryOperator;
+import c0.util.program.structure.operator.UnaryOperator;
 import c0.util.program.structure.statement.*;
 import c0.vm.FunctionDefine;
-import org.checkerframework.checker.units.qual.C;
+import c0.vm.Op;
+import c0.vm.VmOp;
+import c0.vm.dataType.Uint32;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class FunctionCodegen
 {
@@ -60,6 +61,95 @@ public class FunctionCodegen
 
         var endBB = compileBlockWithoutScope(func.body, srtBB, scope);
 
+        if (s.find(RET_VAL_KEY).get().ty.type == Ty.VOID)
+        {
+            setJump(endBB, new JumpInstruction(JumpInstE.Return));
+        }
+
+        var arr = bbArrange(srtBB);
+
+        Tuple<BigInteger, HashMap<BigInteger, BigInteger>> tuple = null;
+        for (var a : arr)
+        {
+            var pack = new Tuple<>(a, basicBlocks.get(a.intValue()));
+            var acc = 0;
+            HashMap<BigInteger, BigInteger> map = new HashMap<>();
+            map.put(pack.first, BigInteger.valueOf(acc));
+            acc += pack.second.code.size();
+            switch (pack.second.jump.inst)
+            {
+                case JumpIf:
+                    acc += 1;
+                case Jump:
+                case Return:
+                    acc += 1;
+                case Unreachable:
+                case Undefined:
+            }
+            tuple = new Tuple<>(BigInteger.valueOf(acc), map);
+        }
+
+        assert tuple != null;
+        var srtOffset = tuple.second;
+
+        var resCode = new ArrayList<Op>();
+        for (var a : arr)
+        {
+            var bb = basicBlocks.get(a.intValue());
+            resCode.addAll(bb.code);
+            switch (bb.jump.inst)
+            {
+                case Return:
+                    resCode.add(new Op(VmOp.RET));
+                case Jump:
+                    resCode.add(new Op(
+                            VmOp.BR,
+                            srtOffset
+                                    .get(BigInteger.valueOf(bb.jump.value.get().first.intValue()))
+                                    .subtract(BigInteger.valueOf(resCode.size()))
+                                    .subtract(BigInteger.ONE)
+
+                    ));
+                case JumpIf:
+                    resCode.add(new Op(
+                            VmOp.BR_TRUE,
+                            srtOffset
+                                    .get(BigInteger.valueOf(bb.jump.value.get().first.intValue()))
+                                    .subtract(BigInteger.valueOf(resCode.size()))
+                                    .subtract(BigInteger.ONE)
+
+                    ));
+                    resCode.add(new Op(
+                            VmOp.BR,
+                            srtOffset
+                                    .get(BigInteger.valueOf(bb.jump.value.get().second.get().intValue()))
+                                    .subtract(BigInteger.valueOf(resCode.size()))
+                                    .subtract(BigInteger.ONE)
+
+                    ));
+            }
+        }
+
+
+        var nameValId = scope.getNewId();
+        var nameGlobalId = entries.insertStringLiteral(func.name.name, nameValId);
+
+        return new FunctionDefine(
+                nameGlobalId,
+                new Uint32(slot.first.longValue()),
+                new Uint32(slot.second.longValue()),
+                new Uint32(loc_top),
+                resCode
+        );
+    }
+
+    private ArrayList<BigInteger> bbArrange(BigInteger srt) throws CompileError
+    {
+        var arrState = new BBArranger(basicBlocks.toArray(new BasicBlock[]{}));
+
+        arrState.constructArr(srt);
+
+        return arrState.arrange();
     }
 
     private BigInteger compileBlockWithoutScope(BlockStatement stmt, BigInteger id, Scope s) throws CompileError
@@ -89,7 +179,7 @@ public class FunctionCodegen
         }
         else if (ExpressionStatement.class.equals(stmt.getClass()))
         {
-            return compileExpr(((ExpressionStatement) stmt).expression, id, s);
+            return compileExprStmt((ExpressionStatement) stmt, id, s);
         }
         else if (DeclareStatement.class.equals(stmt.getClass()))
         {
@@ -112,6 +202,16 @@ public class FunctionCodegen
             return id;
         }
         else return null;
+    }
+
+    private BigInteger compileExprStmt(ExpressionStatement stmt, BigInteger id, Scope s) throws CompileError
+    {
+        var ty = compileExpr(stmt.expression, id, s);
+        if (ty.sizeSlot().longValue() > 0)
+        {
+            appendCode(id, new Op(VmOp.POP_N, ty.sizeSlot()));
+        }
+        return id;
     }
 
     private BigInteger compileBlock(BlockStatement stmt, BigInteger id, Scope s) throws CompileError
@@ -149,6 +249,11 @@ public class FunctionCodegen
         {
             throw new CompileError(ErrorCode.DuplicatedJump, new Span());
         }
+    }
+
+    private Optional<Place> getPlace(BigInteger id)
+    {
+        return Optional.ofNullable(placeMapping.get(id));
     }
 
     private BigInteger compileIf(IfStatement stmt, BigInteger id, Scope s) throws CompileError
@@ -199,16 +304,6 @@ public class FunctionCodegen
         return id;
     }
 
-    private BigInteger compileExpr(Expression stmt, BigInteger id, Scope s)
-    {
-
-    }
-
-    private BigInteger compileAssignExpr(AssignExpression expr, BigInteger id, Scope s)
-    {
-
-    }
-
     private BigInteger compileReturn(ReturnStatement stmt, BigInteger id, Scope s) throws CompileError
     {
         var funcTy = scope.find(func.name.name).get().ty.getFunc().get();
@@ -230,19 +325,215 @@ public class FunctionCodegen
             else
             {
                 var retId = s.find(RET_VAL_KEY).get().id;
-                var offset = setJump();
+                var offset = getPlace(retId).get();
+                appendCode(id, opLoadAddress(offset));
+                var ty = compileExpr(stmt.retValue.get(), id, s);
+                if (ty.type != retTy.type)
+                {
+                    throw new CompileError(ErrorCode.TypeMismatch, stmt.getSpan());
+                }
+                appendCode(id, storeTy(retTy));
             }
         }
+        setJump(id, new JumpInstruction(JumpInstE.Return));
+        return newBB();
     }
 
-    private BigInteger compileBreak(BreakStatement stmt, BigInteger id, Scope s)
+    //TODO: probably wrong
+    private BigInteger compileBreak(BreakStatement stmt, BigInteger id, Scope s) throws CompileError
     {
-
+        var next = breakContinue.get(breakContinue.size() - 1).second;
+        setJump(id, new JumpInstruction(next));
+        return newBB();
     }
 
-    private BigInteger compileContinue(ContinueStatement stmt, BigInteger id, Scope s)
+    private BigInteger compileContinue(ContinueStatement stmt, BigInteger id, Scope s) throws CompileError
     {
+        var next = breakContinue.get(breakContinue.size() - 1).first;
+        setJump(id, new JumpInstruction(next));
+        return newBB();
+    }
 
+    private Type compileExpr(Expression stmt, BigInteger id, Scope s) throws CompileError
+    {
+        if (IdentExpression.class.equals(stmt.getClass()))
+        {
+            return compileIdentExpr((IdentExpression) stmt, id, s);
+        }
+        else if (AssignExpression.class.equals(stmt.getClass()))
+        {
+            return compileAssignExpr((AssignExpression) stmt, id, s);
+        }
+        else if (AsExpression.class.equals(stmt.getClass()))
+        {
+            return compileAsExpr((AsExpression) stmt, id, s);
+        }
+        else if (LiteralExpression.class.equals(stmt.getClass()))
+        {
+            return compileLiteralExpr((LiteralExpression) stmt, id, s);
+        }
+        else if (UnaryExpression.class.equals(stmt.getClass()))
+        {
+            return compileUnaryExpr((UnaryExpression) stmt, id, s);
+        }
+        else if (BinaryExpression.class.equals(stmt.getClass()))
+        {
+            return compileBinaryExpr((BinaryExpression) stmt, id, s);
+        }
+        else if (CallExpression.class.equals(stmt.getClass()))
+        {
+            return compileCallExpr((CallExpression) stmt, id, s);
+        }
+        throw new CompileError(ErrorCode.Unreachable, new Span());
+    }
+
+    private Type compileIdentExpr(IdentExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        var ty = genIdentAddr(expr, id, s).first;
+        appendCode(id, loadTy(ty));
+        return ty;
+    }
+
+    private Type compileAssignExpr(AssignExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        var l = getLValueAddr(expr.left, id, s);
+        var rT = compileExpr(expr.right, id, s);
+
+        if (l.first.type != rT.type)
+        {
+            throw new CompileError(ErrorCode.AssignToConst, expr.left.getSpan());
+        }
+
+        if (!expr.allowAssignConst && l.second)
+        {
+            throw new CompileError(ErrorCode.AssignToConst, expr.left.getSpan());
+        }
+
+        appendCode(id, storeTy(l.first));
+
+        return new Type(Ty.VOID);
+    }
+
+    private Type compileBinaryExpr(BinaryExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        var lhsTy = compileExpr(expr.left, id, s);
+        var rhsTy = compileExpr(expr.right, id, s);
+
+        if (lhsTy.type != rhsTy.type)
+        {
+            throw new CompileError(ErrorCode.TypeMismatch, expr.right.getSpan());
+        }
+
+        var code = binaryOp(expr.op, lhsTy).get();
+
+        for (var c : code)
+        {
+            appendCode(id, c);
+        }
+
+        var resTy = binaryOpResTy(expr.op, lhsTy).get();
+        return resTy;
+    }
+
+    private Type compileUnaryExpr(UnaryExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        var lhsTy = compileExpr(expr.expression, id, s);
+
+        var code = unaryOp(expr.op, lhsTy).get();
+
+        for (var c : code)
+        {
+            appendCode(id, c);
+        }
+
+        var resTy = unaryOpResTy(expr.op, lhsTy).get();
+        return resTy;
+    }
+
+    private Type compileAsExpr(AsExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        var lhsTy = compileExpr(expr.value, id, s);
+        var rhsTy = getTyNoVoid(expr.type);
+
+        var code = asOp(lhsTy, rhsTy).get();
+
+        for (var c : code)
+        {
+            appendCode(id, c);
+        }
+
+        return rhsTy;
+    }
+
+    private Type compileLiteralExpr(LiteralExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        switch (expr.type)
+        {
+            case INT64:
+            case CHAR:
+                appendCode(id, new Op(VmOp.PUSH, BigInteger.valueOf(expr.getInt64Value())));
+                return new Type(Ty.INT);
+            case DOUBLE:
+                appendCode(id, new Op(VmOp.PUSH, BigInteger.valueOf(expr.getInt64Value())));
+                return new Type(Ty.DOUBLE);
+            case STRING:
+                var valId = s.getNewId();
+                var globalId = entries.insertStringLiteral((String) expr.value, valId);
+                appendCode(id, new Op(VmOp.PUSH, globalId.getBig()));
+                return new Type(Ty.INT);
+        }
+        throw new CompileError(ErrorCode.Unreachable, expr.getSpan());
+    }
+
+    private Type compileCallExpr(CallExpression expr, BigInteger id, Scope s) throws CompileError
+    {
+        ArrayList<Type> exprTy = new ArrayList<>();
+        var funcName = expr.function.name;
+        var funcSig = scope.find(funcName).get();
+
+        var funcTy = funcSig.ty.getFunc().get();
+
+        appendCode(id, new Op(VmOp.STACK_ALLOC, funcTy.ret.sizeSlot()));
+
+        for (var sub : expr.params)
+        {
+            var ty = compileExpr(sub, id, s);
+            exprTy.add(ty);
+        }
+
+        if (exprTy.size() != funcTy.params.size())
+        {
+            throw new CompileError(ErrorCode.TypeMismatch, expr.getSpan());
+        }
+
+        for (int i = 0; i < funcTy.params.size(); i++)
+        {
+            if (exprTy.get(i).type != funcTy.params.get(i).type)
+            {
+                throw new CompileError(ErrorCode.TypeMismatch, expr.params.get(i).getSpan());
+            }
+        }
+
+        var retTy = funcTy.ret;
+        var funcId = entries.functionId(funcName);
+        if (funcId.isPresent())
+        {
+            appendCode(id, new Op(VmOp.CALL, funcId.get().getBig()));
+        }
+        else
+        {
+            var valId = s.getNewId();
+            var globalId = entries.insertStringLiteral(funcName, valId);
+            appendCode(id, new Op(VmOp.CALL_NAME, globalId.getBig()));
+        }
+
+        return retTy;
+    }
+
+    private void appendCode(BigInteger id, Op code)
+    {
+        var b = basicBlocks.get(id.intValue());
+        b.code.add(code);
     }
 
     private BigInteger newBB()
@@ -252,8 +543,260 @@ public class FunctionCodegen
         return BigInteger.valueOf(id);
     }
 
-    private Tuple<BigInteger, BigInteger> addParams(Scope s)
+    private Tuple<BigInteger, BigInteger> addParams(Scope s) throws CompileError
     {
+        var retTy = getTy(func.returnType);
+        var retSize = retTy.sizeSlot();
+        var retId = s.insert(RET_VAL_KEY, new Symbol(retTy, false)).get();
 
+        placeMapping.put(retId, new Place(p.Arg, arg_top));
+        arg_top += retSize.longValue();
+
+        for (var param : func.params)
+        {
+            var paramTy = getTyNoVoid(param.type);
+            var paramSize = paramTy.sizeSlot();
+            var paramId = s.insert(
+                    param.name.name,
+                    new Symbol(paramTy, param.isConst)
+            ).get();
+            placeMapping.put(paramId, new Place(p.Arg, arg_top));
+            arg_top += paramSize.longValue();
+        }
+
+        return new Tuple<>(retSize, BigInteger.valueOf(arg_top).subtract(retSize));
+    }
+
+    private Optional<Op[]> asOp(Type from, Type to)
+    {
+        switch (from.type)
+        {
+            case INT:
+            case ADDR:
+                switch (to.type)
+                {
+                    case INT:
+                    case ADDR:
+                    case BOOL:
+                        return Optional.of(new Op[]{});
+                    case DOUBLE:
+                        return Optional.of(new Op[]{new Op(VmOp.F_TO_I)});
+                    default:
+                        return Optional.empty();
+                }
+            case DOUBLE:
+                switch (to.type)
+                {
+                    case INT:
+                        return Optional.of(new Op[]{new Op(VmOp.I_TO_F)});
+                    case DOUBLE:
+                    case BOOL:
+                        return Optional.of(new Op[]{});
+                    default:
+                        return Optional.empty();
+                }
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private Optional<Op[]> binaryOp(BinaryOperator op, Type ty)
+    {
+        switch (ty.type)
+        {
+            case INT:
+            case ADDR:
+                switch (op)
+                {
+                    case Add:
+                        return Optional.of(new Op[]{new Op(VmOp.ADD_I)});
+                    case Sub:
+                        return Optional.of(new Op[]{new Op(VmOp.SUB_I)});
+                    case Mul:
+                        return Optional.of(new Op[]{new Op(VmOp.MUL_I)});
+                    case Div:
+                        return Optional.of(new Op[]{new Op(VmOp.DIV_I)});
+                    case Gt:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_GT)});
+                    case Lt:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_LT)});
+                    case Ge:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_LT), new Op(VmOp.NOT)});
+                    case Le:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_GT), new Op(VmOp.NOT)});
+                    case Eq:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.NOT)});
+                    case Neq:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_I)});
+                }
+            case DOUBLE:
+                switch (op)
+                {
+                    case Add:
+                        return Optional.of(new Op[]{new Op(VmOp.ADD_F)});
+                    case Sub:
+                        return Optional.of(new Op[]{new Op(VmOp.SUB_F)});
+                    case Mul:
+                        return Optional.of(new Op[]{new Op(VmOp.MUL_F)});
+                    case Div:
+                        return Optional.of(new Op[]{new Op(VmOp.DIV_F)});
+                    case Gt:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_GT)});
+                    case Lt:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_LT)});
+                    case Ge:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_LT), new Op(VmOp.NOT)});
+                    case Le:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_GT), new Op(VmOp.NOT)});
+                    case Eq:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.NOT)});
+                    case Neq:
+                        return Optional.of(new Op[]{new Op(VmOp.CMP_F)});
+                }
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private Optional<Type> binaryOpResTy(BinaryOperator op, Type ty)
+    {
+        switch (ty.type)
+        {
+            case INT:
+            case DOUBLE:
+            case ADDR:
+                switch (op)
+                {
+                    case Add:
+                    case Sub:
+                    case Mul:
+                    case Div:
+                        return Optional.of(ty);
+                    case Gt:
+                    case Lt:
+                    case Ge:
+                    case Le:
+                    case Eq:
+                    case Neq:
+                        return Optional.of(new Type(Ty.BOOL));
+                }
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private Optional<Op[]> unaryOp(UnaryOperator op, Type ty)
+    {
+        switch (ty.type)
+        {
+            case INT:
+                switch (op)
+                {
+                    case Neg:
+                        return Optional.of(new Op[]{new Op(VmOp.NEG_I)});
+                    case Pos:
+                        return Optional.of(new Op[]{});
+                }
+            case DOUBLE:
+                switch (op)
+                {
+                    case Neg:
+                        return Optional.of(new Op[]{new Op(VmOp.NEG_F)});
+                    case Pos:
+                        return Optional.of(new Op[]{});
+                }
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private Optional<Type> unaryOpResTy(UnaryOperator op, Type ty)
+    {
+        switch (ty.type)
+        {
+            case INT:
+            case DOUBLE:
+                return Optional.of(ty);
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private Op storeTy(Type ty) throws CompileError
+    {
+        switch (ty.type)
+        {
+            case INT:
+            case DOUBLE:
+            case BOOL:
+            case ADDR:
+                return new Op(VmOp.STORE64);
+            case VOID:
+                return new Op(VmOp.POP);
+            default:
+                throw new CompileError(ErrorCode.TypeMismatch, new Span());
+        }
+    }
+
+    private Op loadTy(Type ty) throws CompileError
+    {
+        switch (ty.type)
+        {
+            case INT:
+            case DOUBLE:
+            case BOOL:
+            case ADDR:
+                return new Op(VmOp.LOAD64);
+            case VOID:
+                return new Op(VmOp.POP);
+            default:
+                throw new CompileError(ErrorCode.TypeMismatch, new Span());
+        }
+    }
+
+    private Op opLoadAddress(Place place) throws CompileError
+    {
+        switch (place.place)
+        {
+            case Arg:
+                return new Op(VmOp.ARG_A, BigInteger.valueOf(place.value));
+            case Loc:
+                return new Op(VmOp.LOC_A, BigInteger.valueOf(place.value));
+        }
+        throw new CompileError(ErrorCode.Unreachable, new Span());
+    }
+
+    private Tuple<Type, Boolean> genIdentAddr(IdentExpression i, BigInteger id, Scope s)
+    {
+        var v = s.findGlobal(i.ident.name).get();
+        if (v.second)
+        {
+            var globalId = entries.valueId(v.first.id).get();
+            appendCode(id, new Op(VmOp.GLOBAL_A, globalId.getBig()));
+        }
+        return new Tuple<>(v.first.ty, v.first.isConst);
+    }
+
+    private Tuple<Type, Boolean> getLValueAddr(Expression expr, BigInteger id, Scope s) throws CompileError
+    {
+        if (IdentExpression.class.equals(expr.getClass()))
+        {
+            var i = (IdentExpression) expr;
+            return genIdentAddr(i, id, s);
+        }
+        else
+        {
+            throw new CompileError(ErrorCode.TypeMismatch, expr.getSpan());
+        }
+    }
+
+    private Type getTy(TypeDefine ty) throws CompileError
+    {
+        return Compiler.getTy(ty);
+    }
+
+    private Type getTyNoVoid(TypeDefine ty) throws CompileError
+    {
+        return Compiler.getTyNoVoid(ty);
     }
 }

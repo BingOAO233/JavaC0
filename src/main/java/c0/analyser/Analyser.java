@@ -254,10 +254,9 @@ public class Analyser
         // '->'
         expect(TokenType.ARROW);
         // ty
-        var allowType = new TokenType[]{TokenType.INT64, TokenType.DOUBLE, TokenType.VOID};
-        if (!check(allowType))
+        if (!check(TokenType.IDENT))
         {
-            throw new UnexpectedTokenError(allowType, peek());
+            throw new UnexpectedTokenError(TokenType.IDENT, peek());
         }
         TypeDefine returnType = analyseType();
         // block_stmt
@@ -306,12 +305,11 @@ public class Analyser
         // IDENT
         Ident paramName = analyseIdent();
         // :
-        expect(TokenType.COMMA);
+        expect(TokenType.COLON);
         // ty
-        var allowType = new TokenType[]{TokenType.INT64, TokenType.DOUBLE};
-        if (!check(allowType))
+        if (!check(TokenType.IDENT))
         {
-            throw new UnexpectedTokenError(allowType, peek());
+            throw new UnexpectedTokenError(TokenType.IDENT, peek());
         }
         TypeDefine paramType = analyseType();
 

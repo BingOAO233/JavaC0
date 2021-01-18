@@ -81,4 +81,10 @@ public class Position
     {
         return (Position) super.clone();
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("[%d:%d]", row + 1, col + 1);
+    }
 }

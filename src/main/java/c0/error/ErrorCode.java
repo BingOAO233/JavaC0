@@ -18,5 +18,9 @@ public enum ErrorCode
     UnexpectedType,
     NotABinaryOperator,
     TypeMismatch,
+    Unreachable,
+    AssignToConst,
+    VoidVar,
+    OtherError,
 }
 

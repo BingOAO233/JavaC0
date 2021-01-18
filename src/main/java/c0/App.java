@@ -7,6 +7,7 @@ import java.util.Scanner;
 import c0.analyser.Analyser;
 import c0.compiler.Compiler;
 import c0.error.C0Error;
+import c0.error.CompileError;
 import c0.tokenizer.token.Token;
 import c0.tokenizer.token.TokenType;
 import c0.tokenizer.Tokenizer;
@@ -30,7 +31,6 @@ public class App
     public static void main(String[] args) throws C0Error
     {
         // welcome msg
-        System.out.println("?");
         BetterLogger.notify("Starting ...");
 
         // arguments parse
@@ -66,6 +66,14 @@ public class App
         var s0 = compile(compiler);
         if (result.getBoolean("assembly"))
         {
+            try
+            {
+                writeBinary(s0, output);
+            } catch (IOException e)
+            {
+                BetterLogger.error("Unable to write file");
+                e.printStackTrace();
+            }
 
         }
         // end msg
@@ -74,8 +82,24 @@ public class App
 
     private static S0 compile(Compiler compiler)
     {
+        S0 s0;
+        try
+        {
+            s0 = compiler.compile();
+        } catch (CompileError compileError)
+        {
+            BetterLogger.error("error when compile");
+            compileError.printStackTrace();
+            System.exit(1);
+            return null;
+        }
+        return s0;
 
+    }
 
+    private static void writeBinary(S0 s0, PrintStream output) throws IOException, CompileError
+    {
+        s0.writeBinary(output);
     }
 
     private static Program analyse(Analyser analyser)

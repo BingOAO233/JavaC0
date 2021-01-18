@@ -1,7 +1,11 @@
 package c0.vm;
 
+import c0.error.CompileError;
 import c0.vm.dataType.Uint32;
+import com.google.common.primitives.Longs;
 
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class FunctionDefine
@@ -11,6 +15,16 @@ public class FunctionDefine
     public Uint32 paramSlots;
     public Uint32 locSlots;
     public ArrayList<Op> ins;
+
+    public FunctionDefine(Uint32 name, Uint32 retSlots, Uint32 paramSlots, Uint32 locSlots,
+                          ArrayList<Op> ins)
+    {
+        this.name = name;
+        this.retSlots = retSlots;
+        this.paramSlots = paramSlots;
+        this.locSlots = locSlots;
+        this.ins = ins;
+    }
 
     @Override
     public String toString()
@@ -24,5 +38,18 @@ public class FunctionDefine
         }
         result.append("}");
         return result.toString();
+    }
+
+    public void writeBinary(PrintStream output) throws IOException, CompileError
+    {
+        output.write(Longs.toByteArray(name.getValue()));
+        output.write(Longs.toByteArray(retSlots.getValue()));
+        output.write(Longs.toByteArray(paramSlots.getValue()));
+        output.write(Longs.toByteArray(locSlots.getValue()));
+        output.write(Longs.toByteArray(ins.size()));
+        for (var item : ins)
+        {
+            item.writeBinary(output);
+        }
     }
 }

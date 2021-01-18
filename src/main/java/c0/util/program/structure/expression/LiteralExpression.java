@@ -11,7 +11,7 @@ public class LiteralExpression extends Expression
 
     public LiteralExpression(Span span, LiteralType type, Object value)
     {
-        this.span = span;
+        super(span);
         this.type = type;
     }
 

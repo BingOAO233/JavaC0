@@ -11,14 +11,10 @@ public class BinaryExpression extends Expression
 
     public BinaryExpression(Span span, BinaryOperator op, Expression left, Expression right)
     {
-        this.span = span;
+        super(span);
         this.op = op;
         this.left = left;
         this.right = right;
     }
 
-    public BinaryExpression()
-    {
-
-    }
 }

@@ -1,5 +1,7 @@
 package c0.vm.dataType;
 
+import java.math.BigInteger;
+
 public class Uint32
 {
     long value;
@@ -17,5 +19,10 @@ public class Uint32
     public void setValue(short value)
     {
         this.value = value;
+    }
+
+    public BigInteger getBig()
+    {
+        return BigInteger.valueOf(getValue());
     }
 }

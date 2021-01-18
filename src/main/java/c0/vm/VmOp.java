@@ -1,5 +1,7 @@
 package c0.vm;
 
+import c0.error.CompileError;
+import c0.error.ErrorCode;
 import c0.vm.dataType.Uint8;
 
 public enum VmOp
@@ -65,7 +67,7 @@ public enum VmOp
     PRINT_LN,
     PANIC;
 
-    public Uint8 code()
+    public Uint8 code() throws CompileError
     {
         switch (this)
         {
@@ -190,7 +192,7 @@ public enum VmOp
             case PANIC:
                 return new Uint8((short) 0xfe);
         }
-        return null;
+        throw new CompileError(ErrorCode.Unreachable, null);
     }
 
 }

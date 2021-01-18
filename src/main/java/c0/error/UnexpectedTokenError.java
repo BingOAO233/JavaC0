@@ -32,7 +32,7 @@ public class UnexpectedTokenError extends C0Error
     public String toString()
     {
         return String
-                .format("Analyse Error: expect token type [%s] on %s, get: [%s]", expectTokenType, token.getStartPos(),
+                .format("Analyse Error: expect token type %s on %s, get: [%s]", expectTokenType, token.getStartPos(),
                         token.getTokenType());
     }
 

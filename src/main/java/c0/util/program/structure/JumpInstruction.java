@@ -28,11 +28,3 @@ public class JumpInstruction
     }
 }
 
-enum JumpInstE
-{
-    Undefined,
-    Unreachable,
-    Return,
-    Jump,
-    JumpIf,
-}

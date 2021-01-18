@@ -1,7 +1,11 @@
 package c0.vm;
 
+import c0.error.CompileError;
 import c0.vm.dataType.Uint8;
+import com.google.common.primitives.Longs;
 
+import java.io.IOException;
+import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Optional;
 
@@ -207,6 +211,25 @@ public class Op
             result.append(String.format("(%s)", value));
         }
         return result.toString();
+    }
+
+    public void writeBinary(PrintStream output) throws IOException, CompileError
+    {
+        var code = insType.code();
+        var param = codeParam();
+        var len = param_size(code);
+
+        output.write(Longs.toByteArray(code.getValue()));
+        switch (len.intValue())
+        {
+            case 0:
+                break;
+            case 4:
+            case 8:
+                var x = param.longValue();
+                output.write(Longs.toByteArray(x));
+                break;
+        }
     }
 }
 

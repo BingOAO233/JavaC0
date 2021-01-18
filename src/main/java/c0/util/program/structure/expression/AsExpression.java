@@ -10,13 +10,9 @@ public class AsExpression extends Expression
 
     public AsExpression(Span span, Expression value, TypeDefine type)
     {
-        this.span = span;
+        super(span);
         this.value = value;
         this.type = type;
     }
 
-    public AsExpression()
-    {
-
-    }
 }

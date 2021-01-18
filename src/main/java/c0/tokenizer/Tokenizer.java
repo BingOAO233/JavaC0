@@ -33,10 +33,6 @@ public class Tokenizer
         KEYWORDS.put("return", TokenType.RETURN_KW);
         KEYWORDS.put("break", TokenType.BREAK_KW);
         KEYWORDS.put("continue", TokenType.CONTINUE_KW);
-
-        KEYWORDS.put("int", TokenType.INT64);
-        KEYWORDS.put("void", TokenType.VOID);
-        KEYWORDS.put("double", TokenType.DOUBLE);
     }
 
     public Token nextToken() throws TokenizeError

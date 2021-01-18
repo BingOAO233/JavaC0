@@ -4,8 +4,8 @@ import c0.vm.dataType.Uint32;
 
 public class Place
 {
-    p place;
-    long value;
+    public p place;
+    public long value;
 
     public Place(p place, long value)
     {
