@@ -52,6 +52,10 @@ public class Tokenizer
         {
             return lexNumber();
         }
+        else if (peek == '\"')
+        {
+            return lexString();
+        }
         else if (Character.isAlphabetic(peek) || peek == '_')
         {
             return lexIdentOrKeyword();
@@ -61,6 +65,25 @@ public class Tokenizer
             return lexOperatorOrUnknown();
         }
 
+    }
+
+    private Token lexString()
+    {
+        StringBuilder s = new StringBuilder();
+        iter.nextChar();
+        var c = iter.peekChar();
+        var srt = iter.currentPos();
+        while (c != '\"')
+        {
+            if (c == '\\')
+            {
+                iter.nextChar();
+            }
+            s.append(iter.nextChar());
+            c = iter.peekChar();
+        }
+        iter.nextChar();
+        return new Token(TokenType.STR,s.toString(),srt,iter.currentPos());
     }
 
     private Token lexNumber() throws TokenizeError

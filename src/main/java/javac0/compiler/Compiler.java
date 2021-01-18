@@ -5,11 +5,13 @@ import javac0.error.CompileError;
 import javac0.error.ErrorCode;
 import javac0.util.program.Span;
 import javac0.util.program.structure.Ident;
+import javac0.util.program.structure.LiteralType;
 import javac0.util.program.structure.Program;
 import javac0.util.program.structure.TypeDefine;
 import javac0.util.program.structure.expression.AssignExpression;
 import javac0.util.program.structure.expression.CallExpression;
 import javac0.util.program.structure.expression.IdentExpression;
+import javac0.util.program.structure.expression.LiteralExpression;
 import javac0.util.program.structure.statement.*;
 import javac0.vm.FunctionDefine;
 import javac0.vm.GlobalValue;
@@ -82,7 +84,7 @@ public class Compiler
                             d.getSpan(),
                             true,
                             new IdentExpression(d.name),
-                            d.value.get()
+                            d.value.orElse(new LiteralExpression(new Span(), LiteralType.INT64, (long) 0))
                     )));
         }
         s.add(new ExpressionStatement(
