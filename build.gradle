@@ -31,7 +31,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'JavaC0.App'
+    mainClassName = 'javac0.App'
 }
 
 tasks.withType(JavaCompile) {
