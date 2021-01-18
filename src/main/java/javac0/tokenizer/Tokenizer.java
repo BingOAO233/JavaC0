@@ -77,13 +77,30 @@ public class Tokenizer
         {
             if (c == '\\')
             {
-                iter.nextChar();
+                char a = iter.nextChar();
+                switch (a)
+                {
+                    case 'n':
+                        s.append('\n');
+                        break;
+                    case 't':
+                        s.append('\t');
+                        break;
+                    case 'r':
+                        s.append('\r');
+                        break;
+                    default:
+                        s.append(a);
+                }
             }
-            s.append(iter.nextChar());
+            else
+            {
+                s.append(iter.nextChar());
+            }
             c = iter.peekChar();
         }
         iter.nextChar();
-        return new Token(TokenType.STR,s.toString(),srt,iter.currentPos());
+        return new Token(TokenType.STR, s.toString(), srt, iter.currentPos());
     }
 
     private Token lexNumber() throws TokenizeError
