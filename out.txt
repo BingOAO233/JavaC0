@@ -1,0 +1,27 @@
+static: 5F 73 74 61 72 74 (`_start`)
+
+static: 70 75 74 69 6E 74 (`putint`)
+
+static: 6D 61 69 6E (`main`)
+
+
+fn [2] 0 0 -> 0 {
+    0: StackAlloc(0)
+    1: Call(1)
+}
+fn [1] 2 0 -> 0 {
+    0: LocA(0)
+    1: Push(0)
+    2: Store64
+    3: LocA(1)
+    4: Push(1)
+    5: Store64
+    6: StackAlloc(0)
+    7: LocA(0)
+    8: Load64
+    9: LocA(1)
+   10: Load64
+   11: AddI
+   12: CallName(0)
+   13: Ret
+}
