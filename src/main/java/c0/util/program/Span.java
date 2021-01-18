@@ -2,7 +2,7 @@ package c0.util.program;
 
 import c0.util.Position;
 
-public class Span
+public class Span implements Cloneable
 {
     public Position startPos;
     public Position endPos;
@@ -59,5 +59,11 @@ public class Span
         s.startPos = this.startPos.clone();
         s.endPos = this.endPos.clone();
         return s;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "{" + startPos + "," + endPos + "}";
     }
 }

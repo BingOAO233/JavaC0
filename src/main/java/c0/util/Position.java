@@ -1,7 +1,7 @@
 package c0.util;
 
 
-public class Position
+public class Position implements Cloneable
 {
     public int row;
     public int col;

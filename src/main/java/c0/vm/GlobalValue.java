@@ -5,7 +5,9 @@ import com.google.common.primitives.Longs;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GlobalValue
 {
@@ -33,11 +35,18 @@ public class GlobalValue
 
         for (var bt : bytes)
         {
-            result.append(Integer.toHexString(bt));
+            result.append(String.format(" %s", Integer.toHexString(bt).toUpperCase()));
         }
 
-        String s = String.valueOf(bytes);
-        result.append(s);
+        String s = null;
+        try
+        {
+            s = new String(bytes, "utf-8");
+        } catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        result.append(String.format(" (`%s`)", s));
         result.append('\n');
         return result.toString();
     }

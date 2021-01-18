@@ -72,7 +72,7 @@ public class BBArranger
             return;
         }
         var temp = inDegree.get(id.intValue());
-        temp.subtract(BigInteger.ONE);
+        temp = temp.subtract(BigInteger.ONE);
         if (temp.compareTo(BigInteger.ZERO) == -1)
         {
             throw new CompileError(ErrorCode.OtherError, new Span());
@@ -92,8 +92,8 @@ public class BBArranger
                 arr(ins.value.get().first);
                 break;
             case JumpIf:
-                vis(ins.value.get().first);
-                vis(ins.value.get().second.get());
+                arr(ins.value.get().first);
+                arr(ins.value.get().second.get());
                 break;
             case Return:
                 break;
@@ -103,7 +103,6 @@ public class BBArranger
                 throw new CompileError(ErrorCode.NoDeclaration, new Span());
         }
         path.remove(id);
-        return;
     }
 
     public ArrayList<BigInteger> arrange()

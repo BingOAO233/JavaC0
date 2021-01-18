@@ -30,11 +30,11 @@ public class FunctionDefine
     public String toString()
     {
         StringBuilder result = new StringBuilder();
-        result.append(String.format("fn [%s] %s %s -> %s {", name, locSlots, paramSlots, retSlots));
+        result.append(String.format("fn [%s] %s %s -> %s {\n", name, locSlots, paramSlots, retSlots));
         for (int i = 0; i < ins.size(); i++)
         {
             Op instruction = ins.get(i);
-            result.append(String.format("%05d: %s", i, instruction));
+            result.append(String.format("% 5d: %s\n", i, instruction));
         }
         result.append("}");
         return result.toString();

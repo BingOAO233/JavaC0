@@ -13,20 +13,13 @@ public enum TokenType
     /**
      * data type
      */
-    INT64,      // int64
-    STR,        // string
-    CHAR,       // char
-    DOUBLE,     // float64
+    INT64,        // int64 literal
+    STR,          // String literal
+    CHAR,         // Char literal
+    DOUBLE,       // float64 literal
     VOID,       // void
     FUNC,       // function
 
-//    /**
-//     * literal type
-//     */
-    INT64_L,        // int64 literal
-    STR_L,          // String literal
-    CHAR_L,         // Char literal
-    DOUBLE_L,       // float64 literal
 
     /**
      * keywords

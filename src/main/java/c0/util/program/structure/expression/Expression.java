@@ -3,7 +3,7 @@ package c0.util.program.structure.expression;
 import c0.util.program.Span;
 import c0.util.program.structure.Ident;
 
-public class Expression
+public class Expression implements Cloneable
 {
     protected Span span;
 

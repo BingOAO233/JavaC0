@@ -102,7 +102,8 @@ public class LineBuffer
     @Override
     public String toString()
     {
-        return String.valueOf(buffer);
+        var res = String.valueOf(buffer);
+        return res.substring(1, res.length() - 1);
     }
 }
 

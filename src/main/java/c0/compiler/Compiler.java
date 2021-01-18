@@ -86,21 +86,21 @@ public class Compiler
                             new IdentExpression(d.name),
                             d.value.get()
                     )));
-            s.add(new ExpressionStatement(
-                    new Span(),
-                    new CallExpression(
-                            new Span(),
-                            new Ident(
-                                    new Span(),
-                                    "main"
-                            ),
-                            new ArrayList<>()
-                    )));
-            s.add(new ReturnStatement(
-                    new Span(),
-                    Optional.empty()
-            ));
         }
+        s.add(new ExpressionStatement(
+                new Span(),
+                new CallExpression(
+                        new Span(),
+                        new Ident(
+                                new Span(),
+                                "main"
+                        ),
+                        new ArrayList<>()
+                )));
+        s.add(new ReturnStatement(
+                new Span(),
+                Optional.empty()
+        ));
         var srtFunc = new FunctionStatement(
                 new Span(),
                 new Ident(
@@ -129,9 +129,12 @@ public class Compiler
         var retTy = getTy(func.returnType);
 
         ArrayList<Type> params = new ArrayList<>();
-        for (var param : func.params)
+        if (func.params != null)
         {
-            params.add(getTyNoVoid(param.type));
+            for (var param : func.params)
+            {
+                params.add(getTyNoVoid(param.type));
+            }
         }
         var funcTy = new FunctionTy(params, retTy);
 

@@ -59,7 +59,7 @@ public class FunctionCodegen
 
         var srtBB = newBB();
 
-        var endBB = compileBlockWithoutScope(func.body, srtBB, scope);
+        var endBB = compileBlockWithoutScope(func.body, srtBB, s);
 
         if (s.find(RET_VAL_KEY).get().ty.type == Ty.VOID)
         {
@@ -68,12 +68,12 @@ public class FunctionCodegen
 
         var arr = bbArrange(srtBB);
 
+        HashMap<BigInteger, BigInteger> map = new HashMap<>();
         Tuple<BigInteger, HashMap<BigInteger, BigInteger>> tuple = null;
+        var acc = 0;
         for (var a : arr)
         {
             var pack = new Tuple<>(a, basicBlocks.get(a.intValue()));
-            var acc = 0;
-            HashMap<BigInteger, BigInteger> map = new HashMap<>();
             map.put(pack.first, BigInteger.valueOf(acc));
             acc += pack.second.code.size();
             switch (pack.second.jump.inst)
@@ -100,19 +100,21 @@ public class FunctionCodegen
             switch (bb.jump.inst)
             {
                 case Return:
-                    resCode.add(new Op(VmOp.RET));
+                    resCode.add(new Op(VmOp.Ret));
+                    break;
                 case Jump:
                     resCode.add(new Op(
-                            VmOp.BR,
+                            VmOp.Br,
                             srtOffset
                                     .get(BigInteger.valueOf(bb.jump.value.get().first.intValue()))
                                     .subtract(BigInteger.valueOf(resCode.size()))
                                     .subtract(BigInteger.ONE)
 
                     ));
+                    break;
                 case JumpIf:
                     resCode.add(new Op(
-                            VmOp.BR_TRUE,
+                            VmOp.BrTrue,
                             srtOffset
                                     .get(BigInteger.valueOf(bb.jump.value.get().first.intValue()))
                                     .subtract(BigInteger.valueOf(resCode.size()))
@@ -120,13 +122,14 @@ public class FunctionCodegen
 
                     ));
                     resCode.add(new Op(
-                            VmOp.BR,
+                            VmOp.Br,
                             srtOffset
                                     .get(BigInteger.valueOf(bb.jump.value.get().second.get().intValue()))
                                     .subtract(BigInteger.valueOf(resCode.size()))
                                     .subtract(BigInteger.ONE)
 
                     ));
+                    break;
             }
         }
 
@@ -209,7 +212,7 @@ public class FunctionCodegen
         var ty = compileExpr(stmt.expression, id, s);
         if (ty.sizeSlot().longValue() > 0)
         {
-            appendCode(id, new Op(VmOp.POP_N, ty.sizeSlot()));
+            appendCode(id, new Op(VmOp.PopN, ty.sizeSlot()));
         }
         return id;
     }
@@ -227,8 +230,9 @@ public class FunctionCodegen
         var nextB = newBB();
 
         breakContinue.add(new Tuple<>(condB, nextB));
+        compileExpr(stmt.condition, condB, s);
         setJump(id, new JumpInstruction(condB));
-        setJump(id, new JumpInstruction(bodyB, nextB));
+        setJump(condB, new JumpInstruction(bodyB, nextB));
 
         var bodyEndB = compileBlock(stmt.body, bodyB, s);
         setJump(bodyEndB, new JumpInstruction(condB));
@@ -241,13 +245,13 @@ public class FunctionCodegen
     private void setJump(BigInteger id, JumpInstruction jump) throws CompileError
     {
         var bb = basicBlocks.get(id.intValue());
-        if (bb.jump.inst == jump.inst)
+        if (bb.jump.inst == JumpInstE.Undefined)
         {
             bb.jump = jump;
         }
         else
         {
-            throw new CompileError(ErrorCode.DuplicatedJump, new Span());
+            throw new CompileError(ErrorCode.DuplicatedJump, null);
         }
     }
 
@@ -262,7 +266,7 @@ public class FunctionCodegen
         compileExpr(stmt.condition, id, s);
 
         var trueB = newBB();
-        var trueEndB = newBB();
+        var trueEndB = compileBlock(stmt.ifBlock, trueB, s);
 
         setJump(trueEndB, new JumpInstruction(endB));
         BigInteger falseB;
@@ -298,9 +302,12 @@ public class FunctionCodegen
         var size = v.second.sizeSlot();
         loc_top += size.longValue();
 
-        var val = stmt.value.get();
-        var ass = new AssignExpression(new Span(), true, new IdentExpression(stmt.name), val);
-        compileAssignExpr(ass, id, s);
+        if (stmt.value.isPresent())
+        {
+            var val = stmt.value.get();
+            var ass = new AssignExpression(new Span(), true, new IdentExpression(stmt.name), val);
+            compileAssignExpr(ass, id, s);
+        }
         return id;
     }
 
@@ -471,15 +478,15 @@ public class FunctionCodegen
         {
             case INT64:
             case CHAR:
-                appendCode(id, new Op(VmOp.PUSH, BigInteger.valueOf(expr.getInt64Value())));
+                appendCode(id, new Op(VmOp.Push, BigInteger.valueOf(expr.getInt64Value())));
                 return new Type(Ty.INT);
             case DOUBLE:
-                appendCode(id, new Op(VmOp.PUSH, BigInteger.valueOf(expr.getInt64Value())));
+                appendCode(id, new Op(VmOp.Push, BigInteger.valueOf(expr.getInt64Value())));
                 return new Type(Ty.DOUBLE);
             case STRING:
                 var valId = s.getNewId();
                 var globalId = entries.insertStringLiteral((String) expr.value, valId);
-                appendCode(id, new Op(VmOp.PUSH, globalId.getBig()));
+                appendCode(id, new Op(VmOp.Push, globalId.getBig()));
                 return new Type(Ty.INT);
         }
         throw new CompileError(ErrorCode.Unreachable, expr.getSpan());
@@ -493,7 +500,7 @@ public class FunctionCodegen
 
         var funcTy = funcSig.ty.getFunc().get();
 
-        appendCode(id, new Op(VmOp.STACK_ALLOC, funcTy.ret.sizeSlot()));
+        appendCode(id, new Op(VmOp.StackAlloc, funcTy.ret.sizeSlot()));
 
         for (var sub : expr.params)
         {
@@ -506,7 +513,8 @@ public class FunctionCodegen
             throw new CompileError(ErrorCode.TypeMismatch, expr.getSpan());
         }
 
-        for (int i = 0; i < funcTy.params.size(); i++)
+
+        for (int i = 0; i < exprTy.size(); i++)
         {
             if (exprTy.get(i).type != funcTy.params.get(i).type)
             {
@@ -518,13 +526,13 @@ public class FunctionCodegen
         var funcId = entries.functionId(funcName);
         if (funcId.isPresent())
         {
-            appendCode(id, new Op(VmOp.CALL, funcId.get().getBig()));
+            appendCode(id, new Op(VmOp.Call, funcId.get().getBig()));
         }
         else
         {
             var valId = s.getNewId();
             var globalId = entries.insertStringLiteral(funcName, valId);
-            appendCode(id, new Op(VmOp.CALL_NAME, globalId.getBig()));
+            appendCode(id, new Op(VmOp.CallName, globalId.getBig()));
         }
 
         return retTy;
@@ -552,16 +560,19 @@ public class FunctionCodegen
         placeMapping.put(retId, new Place(p.Arg, arg_top));
         arg_top += retSize.longValue();
 
-        for (var param : func.params)
+        if (func.params != null)
         {
-            var paramTy = getTyNoVoid(param.type);
-            var paramSize = paramTy.sizeSlot();
-            var paramId = s.insert(
-                    param.name.name,
-                    new Symbol(paramTy, param.isConst)
-            ).get();
-            placeMapping.put(paramId, new Place(p.Arg, arg_top));
-            arg_top += paramSize.longValue();
+            for (var param : func.params)
+            {
+                var paramTy = getTyNoVoid(param.type);
+                var paramSize = paramTy.sizeSlot();
+                var paramId = s.insert(
+                        param.name.name,
+                        new Symbol(paramTy, param.isConst)
+                ).get();
+                placeMapping.put(paramId, new Place(p.Arg, arg_top));
+                arg_top += paramSize.longValue();
+            }
         }
 
         return new Tuple<>(retSize, BigInteger.valueOf(arg_top).subtract(retSize));
@@ -580,7 +591,7 @@ public class FunctionCodegen
                     case BOOL:
                         return Optional.of(new Op[]{});
                     case DOUBLE:
-                        return Optional.of(new Op[]{new Op(VmOp.F_TO_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.FToI)});
                     default:
                         return Optional.empty();
                 }
@@ -588,7 +599,7 @@ public class FunctionCodegen
                 switch (to.type)
                 {
                     case INT:
-                        return Optional.of(new Op[]{new Op(VmOp.I_TO_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.IToF)});
                     case DOUBLE:
                     case BOOL:
                         return Optional.of(new Op[]{});
@@ -609,49 +620,49 @@ public class FunctionCodegen
                 switch (op)
                 {
                     case Add:
-                        return Optional.of(new Op[]{new Op(VmOp.ADD_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.AddI)});
                     case Sub:
-                        return Optional.of(new Op[]{new Op(VmOp.SUB_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.SubI)});
                     case Mul:
-                        return Optional.of(new Op[]{new Op(VmOp.MUL_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.MulI)});
                     case Div:
-                        return Optional.of(new Op[]{new Op(VmOp.DIV_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.DivI)});
                     case Gt:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_GT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpI), new Op(VmOp.SetGt)});
                     case Lt:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_LT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpI), new Op(VmOp.SetLt)});
                     case Ge:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_LT), new Op(VmOp.NOT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpI), new Op(VmOp.SetLt), new Op(VmOp.Not)});
                     case Le:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.SET_GT), new Op(VmOp.NOT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpI), new Op(VmOp.SetGt), new Op(VmOp.Not)});
                     case Eq:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_I), new Op(VmOp.NOT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpI), new Op(VmOp.Not)});
                     case Neq:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpI)});
                 }
             case DOUBLE:
                 switch (op)
                 {
                     case Add:
-                        return Optional.of(new Op[]{new Op(VmOp.ADD_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.AddF)});
                     case Sub:
-                        return Optional.of(new Op[]{new Op(VmOp.SUB_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.SubF)});
                     case Mul:
-                        return Optional.of(new Op[]{new Op(VmOp.MUL_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.MulF)});
                     case Div:
-                        return Optional.of(new Op[]{new Op(VmOp.DIV_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.DivF)});
                     case Gt:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_GT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpF), new Op(VmOp.SetGt)});
                     case Lt:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_LT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpF), new Op(VmOp.SetLt)});
                     case Ge:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_LT), new Op(VmOp.NOT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpF), new Op(VmOp.SetLt), new Op(VmOp.Not)});
                     case Le:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.SET_GT), new Op(VmOp.NOT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpF), new Op(VmOp.SetGt), new Op(VmOp.Not)});
                     case Eq:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_F), new Op(VmOp.NOT)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpF), new Op(VmOp.Not)});
                     case Neq:
-                        return Optional.of(new Op[]{new Op(VmOp.CMP_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.CmpF)});
                 }
             default:
                 return Optional.empty();
@@ -693,7 +704,7 @@ public class FunctionCodegen
                 switch (op)
                 {
                     case Neg:
-                        return Optional.of(new Op[]{new Op(VmOp.NEG_I)});
+                        return Optional.of(new Op[]{new Op(VmOp.NegI)});
                     case Pos:
                         return Optional.of(new Op[]{});
                 }
@@ -701,7 +712,7 @@ public class FunctionCodegen
                 switch (op)
                 {
                     case Neg:
-                        return Optional.of(new Op[]{new Op(VmOp.NEG_F)});
+                        return Optional.of(new Op[]{new Op(VmOp.NegF)});
                     case Pos:
                         return Optional.of(new Op[]{});
                 }
@@ -730,9 +741,9 @@ public class FunctionCodegen
             case DOUBLE:
             case BOOL:
             case ADDR:
-                return new Op(VmOp.STORE64);
+                return new Op(VmOp.Store64);
             case VOID:
-                return new Op(VmOp.POP);
+                return new Op(VmOp.Pop);
             default:
                 throw new CompileError(ErrorCode.TypeMismatch, new Span());
         }
@@ -746,9 +757,9 @@ public class FunctionCodegen
             case DOUBLE:
             case BOOL:
             case ADDR:
-                return new Op(VmOp.LOAD64);
+                return new Op(VmOp.Load64);
             case VOID:
-                return new Op(VmOp.POP);
+                return new Op(VmOp.Pop);
             default:
                 throw new CompileError(ErrorCode.TypeMismatch, new Span());
         }
@@ -759,20 +770,26 @@ public class FunctionCodegen
         switch (place.place)
         {
             case Arg:
-                return new Op(VmOp.ARG_A, BigInteger.valueOf(place.value));
+                return new Op(VmOp.ArgA, BigInteger.valueOf(place.value));
             case Loc:
-                return new Op(VmOp.LOC_A, BigInteger.valueOf(place.value));
+                return new Op(VmOp.LocA, BigInteger.valueOf(place.value));
         }
         throw new CompileError(ErrorCode.Unreachable, new Span());
     }
 
-    private Tuple<Type, Boolean> genIdentAddr(IdentExpression i, BigInteger id, Scope s)
+    private Tuple<Type, Boolean> genIdentAddr(IdentExpression i, BigInteger id, Scope s) throws CompileError
     {
         var v = s.findGlobal(i.ident.name).get();
+
         if (v.second)
         {
             var globalId = entries.valueId(v.first.id).get();
-            appendCode(id, new Op(VmOp.GLOBAL_A, globalId.getBig()));
+            appendCode(id, new Op(VmOp.GlobA, globalId.getBig()));
+        }
+        else
+        {
+            var varId = v.first.id;
+            appendCode(id, opLoadAddress(getPlace(varId).get()));
         }
         return new Tuple<>(v.first.ty, v.first.isConst);
     }

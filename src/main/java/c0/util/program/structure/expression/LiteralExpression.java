@@ -13,6 +13,7 @@ public class LiteralExpression extends Expression
     {
         super(span);
         this.type = type;
+        this.value = value;
     }
 
     public Long getInt64Value()
@@ -20,14 +21,26 @@ public class LiteralExpression extends Expression
         return (long) value;
     }
 
-    public String getStringValue()
+    @Override
+    public LiteralExpression clone() throws CloneNotSupportedException
     {
-        return (String) value;
+        LiteralExpression e = (LiteralExpression) super.clone();
+        e.type = LiteralType.valueOf(type.toString());
+        switch (type)
+        {
+            case INT64:
+                e.value = Long.valueOf((long) value);
+                break;
+            case DOUBLE:
+                e.value = Double.valueOf((double) value);
+                break;
+            case STRING:
+                e.value = String.valueOf(value);
+                break;
+            case CHAR:
+                e.value = Long.valueOf((long) value);
+                break;
+        }
+        return e;
     }
-
-    public Double getDoubleValue()
-    {
-        return (double) value;
-    }
-
 }

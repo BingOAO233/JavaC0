@@ -138,6 +138,7 @@ public class Token
                 tokenType == TokenType.MINUS ||
                 tokenType == TokenType.MUL ||
                 tokenType == TokenType.DIV ||
+                tokenType == TokenType.ASSIGN ||
                 tokenType == TokenType.EQ ||
                 tokenType == TokenType.NEQ ||
                 tokenType == TokenType.LT ||

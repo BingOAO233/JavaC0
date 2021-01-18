@@ -14,4 +14,10 @@ public class CompileError extends C0Error
         super(errorCode);
         this.span = span;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("Compile Error: %s, at: %s", errorCode, span);
+    }
 }

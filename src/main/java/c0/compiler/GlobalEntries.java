@@ -10,18 +10,23 @@ import java.util.*;
 public class GlobalEntries
 {
     public IndexSet<String> functions;
-    public HashMap<BigInteger, byte[]> values;
+    public IndexMap<BigInteger, byte[]> values;
 
     public GlobalEntries(IndexSet<String> functions,
                          HashMap<BigInteger, byte[]> values)
     {
         this.functions = functions;
-        this.values = values;
+        this.values = new IndexMap<>(values);
     }
 
     public Optional<Uint32> functionId(String funcName)
     {
-        return Optional.of(new Uint32(functions.getIndex(funcName)));
+        var id = functions.getIndex(funcName);
+        if (id != -1)
+        {
+            return Optional.of(new Uint32(id));
+        }
+        return Optional.empty();
     }
 
     public Uint32 insertStringLiteral(String s, BigInteger valId)
@@ -32,6 +37,11 @@ public class GlobalEntries
 
     public Optional<Uint32> valueId(BigInteger symbol)
     {
+        var id = values.getIndex(symbol);
+        if (id != -1)
+        {
+            return Optional.of(new Uint32(id));
+        }
         return Optional.empty();
     }
 }

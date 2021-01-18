@@ -73,7 +73,7 @@ public class StringIter
         {
             lineBuffer.append(scanner.nextLine() + '\n');
         }
-        BetterLogger.notify(lineBuffer.toString());
+        BetterLogger.notify("Source", '\n' + lineBuffer.toString());
         initialized = true;
     }
 

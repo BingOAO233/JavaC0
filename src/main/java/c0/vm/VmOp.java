@@ -6,190 +6,190 @@ import c0.vm.dataType.Uint8;
 
 public enum VmOp
 {
-    NOP,
-    PUSH,
-    POP,
-    POP_N,
-    DUP,
-    LOC_A,
-    ARG_A,
-    GLOBAL_A,
-    LOAD8,
-    LOAD16,
-    LOAD32,
-    LOAD64,
-    STORE8,
-    STORE16,
-    STORE32,
-    STORE64,
-    ALLOC,
-    FREE,
-    STACK_ALLOC,
-    ADD_I,
-    SUB_I,
-    MUL_I,
-    DIV_I,
-    ADD_F,
-    SUB_F,
-    MUL_F,
-    DIV_F,
-    DIV_U,
-    SHL,
-    SHR,
-    AND,
-    OR,
-    XOR,
-    NOT,
-    CMP_I,
-    CMP_U,
-    CMP_F,
-    NEG_I,
-    NEG_F,
-    I_TO_F,
-    F_TO_I,
-    SHR_L,
-    SET_LT,
-    SET_GT,
-    BRA,
-    BR,
-    BR_FALSE,
-    BR_TRUE,
-    CALL,
-    CALL_NAME,
-    RET,
-    SCAN_I,
-    SCAN_C,
-    SCAN_F,
-    PRINT_I,
-    PRINT_C,
-    PRINT_F,
-    PRINT_S,
-    PRINT_LN,
-    PANIC;
+    Nop,
+    Push,
+    Pop,
+    PopN,
+    Dup,
+    LocA,
+    ArgA,
+    GlobA,
+    Load8,
+    Load16,
+    Load32,
+    Load64,
+    Store8,
+    Store16,
+    Store32,
+    Store64,
+    Alloc,
+    Free,
+    StackAlloc,
+    AddI,
+    SubI,
+    MulI,
+    DivI,
+    AddF,
+    SubF,
+    MulF,
+    DivF,
+    DivU,
+    Shl,
+    Shr,
+    And,
+    Or,
+    Xor,
+    Not,
+    CmpI,
+    CmpU,
+    CmpF,
+    NegI,
+    NegF,
+    IToF,
+    FToI,
+    ShrL,
+    SetLt,
+    SetGt,
+    Bra,
+    Br,
+    BrFalse,
+    BrTrue,
+    Call,
+    CallName,
+    Ret,
+    ScanI,
+    ScanC,
+    ScanF,
+    PrintI,
+    PrintC,
+    PrintF,
+    PrintS,
+    PrintLn,
+    Panic;
 
     public Uint8 code() throws CompileError
     {
         switch (this)
         {
-            case NOP:
+            case Nop:
                 return new Uint8((short) 0x00);
-            case PUSH:
+            case Push:
                 return new Uint8((short) 0x01);
-            case POP:
+            case Pop:
                 return new Uint8((short) 0x02);
-            case POP_N:
+            case PopN:
                 return new Uint8((short) 0x03);
-            case DUP:
+            case Dup:
                 return new Uint8((short) 0x04);
-            case LOC_A:
+            case LocA:
                 return new Uint8((short) 0x0a);
-            case ARG_A:
+            case ArgA:
                 return new Uint8((short) 0x0b);
-            case GLOBAL_A:
+            case GlobA:
                 return new Uint8((short) 0x0c);
-            case LOAD8:
+            case Load8:
                 return new Uint8((short) 0x10);
-            case LOAD16:
+            case Load16:
                 return new Uint8((short) 0x11);
-            case LOAD32:
+            case Load32:
                 return new Uint8((short) 0x12);
-            case LOAD64:
+            case Load64:
                 return new Uint8((short) 0x13);
-            case STORE8:
+            case Store8:
                 return new Uint8((short) 0x14);
-            case STORE16:
+            case Store16:
                 return new Uint8((short) 0x15);
-            case STORE32:
+            case Store32:
                 return new Uint8((short) 0x16);
-            case STORE64:
+            case Store64:
                 return new Uint8((short) 0x17);
-            case ALLOC:
+            case Alloc:
                 return new Uint8((short) 0x18);
-            case FREE:
+            case Free:
                 return new Uint8((short) 0x19);
-            case STACK_ALLOC:
+            case StackAlloc:
                 return new Uint8((short) 0x1a);
-            case ADD_I:
+            case AddI:
                 return new Uint8((short) 0x20);
-            case SUB_I:
+            case SubI:
                 return new Uint8((short) 0x21);
-            case MUL_I:
+            case MulI:
                 return new Uint8((short) 0x22);
-            case DIV_I:
+            case DivI:
                 return new Uint8((short) 0x23);
-            case ADD_F:
+            case AddF:
                 return new Uint8((short) 0x24);
-            case SUB_F:
+            case SubF:
                 return new Uint8((short) 0x25);
-            case MUL_F:
+            case MulF:
                 return new Uint8((short) 0x26);
-            case DIV_F:
+            case DivF:
                 return new Uint8((short) 0x27);
-            case DIV_U:
+            case DivU:
                 return new Uint8((short) 0x28);
-            case SHL:
+            case Shl:
                 return new Uint8((short) 0x29);
-            case SHR:
+            case Shr:
                 return new Uint8((short) 0x2a);
-            case AND:
+            case And:
                 return new Uint8((short) 0x2b);
-            case OR:
+            case Or:
                 return new Uint8((short) 0x2c);
-            case XOR:
+            case Xor:
                 return new Uint8((short) 0x2d);
-            case NOT:
+            case Not:
                 return new Uint8((short) 0x2e);
-            case CMP_I:
+            case CmpI:
                 return new Uint8((short) 0x30);
-            case CMP_U:
+            case CmpU:
                 return new Uint8((short) 0x31);
-            case CMP_F:
+            case CmpF:
                 return new Uint8((short) 0x32);
-            case NEG_I:
+            case NegI:
                 return new Uint8((short) 0x34);
-            case NEG_F:
+            case NegF:
                 return new Uint8((short) 0x35);
-            case I_TO_F:
+            case IToF:
                 return new Uint8((short) 0x36);
-            case F_TO_I:
+            case FToI:
                 return new Uint8((short) 0x37);
-            case SHR_L:
+            case ShrL:
                 return new Uint8((short) 0x38);
-            case SET_LT:
+            case SetLt:
                 return new Uint8((short) 0x39);
-            case SET_GT:
+            case SetGt:
                 return new Uint8((short) 0x3a);
-            case BRA:
+            case Bra:
                 return new Uint8((short) 0x40);
-            case BR:
+            case Br:
                 return new Uint8((short) 0x41);
-            case BR_FALSE:
+            case BrFalse:
                 return new Uint8((short) 0x42);
-            case BR_TRUE:
+            case BrTrue:
                 return new Uint8((short) 0x43);
-            case CALL:
+            case Call:
                 return new Uint8((short) 0x48);
-            case RET:
+            case Ret:
                 return new Uint8((short) 0x49);
-            case CALL_NAME:
+            case CallName:
                 return new Uint8((short) 0x4a);
-            case SCAN_I:
+            case ScanI:
                 return new Uint8((short) 0x50);
-            case SCAN_C:
+            case ScanC:
                 return new Uint8((short) 0x51);
-            case SCAN_F:
+            case ScanF:
                 return new Uint8((short) 0x52);
-            case PRINT_I:
+            case PrintI:
                 return new Uint8((short) 0x54);
-            case PRINT_C:
+            case PrintC:
                 return new Uint8((short) 0x55);
-            case PRINT_F:
+            case PrintF:
                 return new Uint8((short) 0x56);
-            case PRINT_S:
+            case PrintS:
                 return new Uint8((short) 0x57);
-            case PRINT_LN:
+            case PrintLn:
                 return new Uint8((short) 0x58);
-            case PANIC:
+            case Panic:
                 return new Uint8((short) 0xfe);
         }
         throw new CompileError(ErrorCode.Unreachable, null);

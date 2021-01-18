@@ -12,4 +12,12 @@ public class IdentExpression extends Expression
         super(new Span());
         this.ident = ident;
     }
+
+    @Override
+    public IdentExpression clone() throws CloneNotSupportedException
+    {
+        IdentExpression e = (IdentExpression) super.clone();
+        e.ident = this.ident.clone();
+        return e;
+    }
 }

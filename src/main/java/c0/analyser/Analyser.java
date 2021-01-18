@@ -456,7 +456,7 @@ public class Analyser
         }
         else
         {
-            elseBlock = null;
+            elseBlock = new EmptyStatement(new Span(span.endPos));
         }
 
         return new IfStatement(span, cond, ifBlock, elseBlock);
@@ -640,13 +640,13 @@ public class Analyser
                 return new IdentExpression(ident);
             }
         }
-        else if (check(TokenType.INT64_L) || check(TokenType.CHAR_L))
+        else if (check(TokenType.INT64) || check(TokenType.CHAR))
         {
             Token literal = next();
             return new LiteralExpression(literal.getSpan(), LiteralType.INT64,
                                          literal.getValue());
         }
-        else if (check(TokenType.STR_L))
+        else if (check(TokenType.STR))
         {
             Token literal = next();
             return new LiteralExpression(literal.getSpan(), LiteralType.STRING,
@@ -729,6 +729,7 @@ public class Analyser
             while (true)
             {
                 var expr = analyseExpression();
+                params.add(expr);
                 if (!check(TokenType.COMMA))
                     break;
                 next();
@@ -741,7 +742,7 @@ public class Analyser
 
     private Expression analyseOPG(Expression lhs, int precedence) throws C0Error, CloneNotSupportedException
     {
-        while (peek().isBinaryOp() && peek().precedence() > precedence)
+        while (peek().isBinaryOp() && peek().precedence() >= precedence)
         {
             // OPG
             var op = next();

@@ -64,7 +64,7 @@ public class App
 
         var compiler = new Compiler(analyse(analyser));
         var s0 = compile(compiler);
-        if (result.getBoolean("assembly"))
+        if (result.getBoolean("binary"))
         {
             try
             {
@@ -74,7 +74,10 @@ public class App
                 BetterLogger.error("Unable to write file");
                 e.printStackTrace();
             }
-
+        }
+        if (result.getBoolean("assembly"))
+        {
+            output.print(s0);
         }
         // end msg
         BetterLogger.success("Complete!");
@@ -93,6 +96,7 @@ public class App
             System.exit(1);
             return null;
         }
+        BetterLogger.success("S0 Compile Complete");
         return s0;
 
     }
@@ -114,10 +118,7 @@ public class App
             System.exit(1);
             return null;
         }
-//        for (Instruction instruction : instructions)
-//        {
-//            output.println(instruction.toString());
-//        }
+        BetterLogger.success("Syntax Analyse Complete");
         return program;
     }
 
@@ -204,6 +205,9 @@ public class App
                 .action(Arguments.storeTrue());
         parser.addArgument("-c", "--compile")
                 .help("Compile the input")
+                .action(Arguments.storeTrue());
+        parser.addArgument("-b", "--binary")
+                .help("Compile to binary")
                 .action(Arguments.storeTrue());
         parser.addArgument("-o", "--output")
                 .help("Set the output file")

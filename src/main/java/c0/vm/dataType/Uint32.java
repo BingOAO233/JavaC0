@@ -25,4 +25,10 @@ public class Uint32
     {
         return BigInteger.valueOf(getValue());
     }
+
+    @Override
+    public String toString()
+    {
+        return String.valueOf(getValue());
+    }
 }
