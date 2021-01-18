@@ -77,6 +77,7 @@ public class Tokenizer
         {
             if (c == '\\')
             {
+                iter.nextChar();
                 char a = iter.nextChar();
                 switch (a)
                 {

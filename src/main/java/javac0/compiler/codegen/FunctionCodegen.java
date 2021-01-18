@@ -71,12 +71,12 @@ public class FunctionCodegen
         HashMap<BigInteger, BigInteger> map = new HashMap<>();
         Tuple<BigInteger, HashMap<BigInteger, BigInteger>> tuple = null;
         var acc = 0;
-        for (var a : arr)
+        for (var id : arr)
         {
-            var pack = new Tuple<>(a, basicBlocks.get(a.intValue()));
-            map.put(pack.first, BigInteger.valueOf(acc));
-            acc += pack.second.code.size();
-            switch (pack.second.jump.inst)
+            var bb = basicBlocks.get(id.intValue());
+            map.put(id, BigInteger.valueOf(acc));
+            acc += bb.code.size();
+            switch (bb.jump.inst)
             {
                 case JumpIf:
                     acc += 1;
